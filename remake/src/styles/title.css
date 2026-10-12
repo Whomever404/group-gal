@@ -1,0 +1,116 @@
+/* 标题页 —— galgame 的排版语汇，与游戏界面的 QQ 灰刻意分开。
+ *
+ * 主视觉不用外部图片：整屏是一道黄昏渐变，右上角那枚 😂 被当作光源放大到出血，
+ * 底部一排角色剪影拼成「全群」的合影，随遮罩向上淡出。
+ * 排版靠左，菜单竖排——经典 VN 标题画面的排法，且比居中式更有方向感。 */
+
+#title{
+  align-items:flex-start;justify-content:center;text-align:left;
+  padding:calc(var(--sp-6) + var(--safe-t)) clamp(22px,7vw,110px) calc(118px + var(--safe-b));
+  padding-left:max(clamp(22px,7vw,110px), calc(var(--safe-l) + 22px));
+  padding-right:max(clamp(22px,7vw,110px), calc(var(--safe-r) + 22px));
+  z-index:5;overflow:hidden;
+  background:
+    radial-gradient(120% 82% at 80% 4%, rgba(217,164,65,.16), transparent 54%),
+    radial-gradient(90% 70% at 8% 104%, rgba(109,141,189,.15), transparent 58%),
+    linear-gradient(180deg,#0e121b 0%, var(--vn-bg) 52%, #06070b 100%);
+}
+
+/* 作者原有的 😂 水印——这次把它当光源，放大到出血、压暗到一个隐约的暖团 */
+#title::after{
+  content:"😂";position:absolute;
+  right:-12vw;top:-18vh;
+  font-size:min(74vh, 58vw);
+  opacity:.022;
+  transform:rotate(-9deg);
+  filter:blur(14px);
+  pointer-events:none;
+}
+
+/* ---------- 标题块（竖排顺序：标题 → 副题 → 标语 → 制作标记） ---------- */
+.t-logo{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start}
+#title h1{order:1}
+.t-sub{order:2}
+.t-tag{order:3}
+.t-kicker{order:4}
+
+#title h1{
+  font-family:var(--font-serif);
+  font-size:var(--fs-vn-display);
+  font-weight:700;
+  line-height:.98;
+  letter-spacing:.02em;
+  color:var(--vn-ink);
+  text-shadow:0 0 56px rgba(217,164,65,.3), 0 3px 1px rgba(0,0,0,.5);
+}
+
+.t-sub{
+  margin-top:var(--sp-3);
+  font-size:clamp(15px,3.2vw,23px);
+  font-weight:600;letter-spacing:.2em;
+  color:var(--vn-accent);
+}
+.t-tag{margin-top:var(--sp-3);color:var(--vn-dim);font-size:14px;letter-spacing:.04em}
+.t-kicker{margin-top:var(--sp-5);font-size:11px;letter-spacing:.36em;color:var(--vn-dim);opacity:.62}
+
+/* ---------- 竖排菜单 ---------- */
+.t-btns{
+  position:relative;z-index:2;
+  margin-top:clamp(26px,6vh,60px);
+  display:flex;flex-direction:column;gap:2px;
+  width:min(340px,74vw);
+}
+#title .btn{
+  position:relative;text-align:left;
+  font-family:var(--font-serif);
+  font-size:clamp(19px,3.3vw,24px);
+  font-weight:600;letter-spacing:.08em;
+  color:var(--vn-dim);
+  padding:13px 20px;min-height:52px;
+  border-radius:var(--r-vn);
+  transition:color var(--dur) var(--ease),padding-left var(--dur) var(--ease);
+}
+/* hover 时亮起的高亮条 */
+#title .btn::before{
+  content:"";position:absolute;left:2px;top:50%;
+  transform:translateY(-50%);
+  width:3px;height:0;background:var(--vn-accent);
+  transition:height var(--dur) var(--ease);
+}
+#title .btn:hover,#title .btn:focus-visible{color:var(--vn-ink);padding-left:28px}
+#title .btn:hover::before,#title .btn:focus-visible::before{height:56%}
+#title .btn.primary{color:var(--vn-ink)}
+#title .btn.primary::before{height:56%}
+
+/* ---------- 底部角色剪影合影（由 main.ts 注入） ---------- */
+/* 每个剪影按容器宽度的固定比例排开，整排居中、两侧出血——
+   读作「一群人的合影向画框外延伸」，而不是几个被裁掉的大色块。 */
+.t-cast{
+  position:absolute;left:0;right:0;bottom:0;
+  display:flex;justify-content:center;align-items:flex-end;gap:0;
+  overflow:hidden;pointer-events:none;z-index:1;
+  opacity:.5;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 42%);
+  mask-image:linear-gradient(180deg,transparent 0%,#000 42%);
+}
+.t-cast > span{flex:0 0 auto;width:min(15vw,120px);display:block}
+.t-cast svg{display:block;width:100%;height:auto}
+
+.t-foot{
+  position:absolute;right:clamp(16px,6vw,88px);bottom:calc(124px + var(--safe-b));
+  z-index:3;color:var(--vn-dim);font-size:11px;letter-spacing:.2em;opacity:.72;
+}
+
+/* 一次编排好的入场：自上而下依次亮起，只播一遍。 */
+#title .t-logo{animation:titleIn .55s var(--ease) both}
+#title .t-btns{animation:titleIn .55s var(--ease) .12s both}
+#title .t-foot{animation:titleIn .55s var(--ease) .3s both}
+@keyframes titleIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ---------- 窄屏 ---------- */
+@media(max-width:560px){
+  #title{justify-content:flex-end;padding-bottom:calc(112px + var(--safe-b))}
+  .t-cast{opacity:.42}
+  .t-cast > span{width:min(17vw,110px)}
+  .t-foot{position:static;margin-top:var(--sp-4);right:auto}
+}

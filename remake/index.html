@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>😂群聊 Galgame · 空骨架</title>
+</head>
+<body>
+<!--
+  这是 Vite 的开发入口。它需要 `npm run dev` 或构建才能运行——
+  直接双击打开本文件会因模块加载失败而无法启动，此时会显示下面的兜底提示。
+
+  · 开发：npm install && npm run dev
+  · 只要单文件产物：npm run build，然后用 dist/index.html（双击即玩）
+-->
+<div id="app">
+  <div id="boot-fallback" hidden style="
+    position:fixed;inset:0;display:grid;place-items:center;padding:32px;
+    background:#0b0d12;color:#ece7dd;text-align:center;
+    font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif;line-height:1.8">
+    <div style="max-width:34rem">
+      <div style="font-size:44px;line-height:1">😂</div>
+      <h1 style="font-size:19px;margin:14px 0 6px;font-weight:800">这是一个开发入口，不能直接双击打开</h1>
+      <p style="color:#9a958b;font-size:14px;margin:0 0 20px">
+        本文件需要 Vite 开发服务器或构建产物才能运行。
+      </p>
+      <pre style="
+        text-align:left;display:inline-block;background:#151a24;border:1px solid rgba(236,231,221,.1);
+        border-radius:6px;padding:14px 18px;font-size:13px;color:#d9a441;margin:0 0 18px;
+        font-family:ui-monospace,Consolas,monospace">npm install
+npm run dev          # 本地开发
+npm run build        # 产出可玩的单文件 dist/index.html</pre>
+      <p style="color:#9a958b;font-size:13px;margin:0">
+        想马上玩：npm run build 之后双击 dist/index.html。
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 应用启动成功时会把 #app 的内容整个换掉（mountShell 会生成 #title）。
+  // 所以这里只需延时看一眼：若 #title 始终没出现，说明没启动起来，才显示兜底提示。
+  setTimeout(function () {
+    var fb = document.getElementById('boot-fallback');
+    if (fb && !document.getElementById('title')) fb.hidden = false;
+  }, 1200);
+</script>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

@@ -8,14 +8,18 @@
 ## 快速开始
 
 ```bash
-# 直接双击打开即可玩（无需服务器）：
-#   group-chat-galgame-v2.html        ← 当前主版本
+# 方式一（推荐）：启动脚本 —— 本地服务器 + file:// 双保险
+./start.sh            # 默认 8931 端口；产物在 dist/index.html
 
-# 或起本地服务器：
-python3 -m http.server 8931   # → http://localhost:8931/group-chat-galgame-v2.html
+# 方式二：直接双击单文件离线版（无需服务器，file:// 可玩）
+#   group-chat-galgame-v2-modular.html        ← 当前主版本（模块化引擎构建）
+
+# 方式三：自行构建
+npm install && npm run build     # → dist/index.html（vite-plugin-singlefile 单文件）
 ```
 
-- 结构：序章 → 第一章 新人报道 → 第二章「群日常」（**15 条支线 hub**）→ 第三章 躲猫猫之夜 → 分岔 → **15 条角色线**
+- 结构：序章 → 第一章 新人报道 → 第二章「群日常」（**回合循环中枢**）→ 第三章 躲猫猫之夜 → 分岔 → **15 条角色线**
+- 运营机制：**首轮**从 15 条全员支线里锁定一名攻略对象 → 此后每回合只出 TA 的**两段本命支线** + **1~2 个随机事件**（日常为主、少量风险）→ 羁绊达阈值即推进主线
 - 结局：**15 个好结局 + 23 个坏结局**，全部可回收（结局回收室）
 - 玩法：点击 / 空格推进，`A` 自动播放，`S` 文字速度，`Esc` 关闭弹窗；顶栏可看「群成员羁绊」与「复读」彩蛋
 
@@ -23,7 +27,11 @@ python3 -m http.server 8931   # → http://localhost:8931/group-chat-galgame-v2.
 
 | 文件 | 说明 |
 |------|------|
-| `group-chat-galgame-v2.html` | ★ v2.0 完整版（剧情全部重写，零引用豆包版对话） |
+| `group-chat-galgame-v2-modular.html` | ★ 当前主版本（模块化引擎构建，含回合循环运营机制，file:// 可玩） |
+| `dist/index.html` | `npm run build` 生成的单文件产物（与上式同源） |
+| `start.sh` | 启动脚本：本地服务器 + file:// 双保险 |
+| `src/` | 模块化工程源码（引擎 / 内容 / UI 三层解耦，Vite + TypeScript） |
+| `group-chat-galgame-v2.html` | v2.0 剧本版（单文件，剧情重写基线） |
 | `group-chat-galgame-v1.html` | v1.0 合并版（以豆包版剧情为底 + 机制合并 + 缺陷修复） |
 | `group-chat-galgame.html` | 版本一：v0.2 可玩 Demo（世界观与角色来源） |
 | `啥子豆包版本.html` | 版本二：豆包版 v1.0（引擎能力来源） |
@@ -33,7 +41,7 @@ python3 -m http.server 8931   # → http://localhost:8931/group-chat-galgame-v2.
 | `skills/immortal-skill/` | 数字永生框架本体（vendored：SKILL.md / personas / prompts / kit） |
 | `docs/` | Code Wiki（架构、引擎、剧本 DSL、运行方式、素材管线、版本对比） |
 | `tools/validate.js` | 剧本完整性 + 全路线可达性校验（`node tools/validate.js`，零依赖） |
-| `tools/smoke-test.js` | jsdom 端到端冒烟测试（`npm i -D jsdom && node tools/smoke-test.js`） |
+| `tools/smoke-loop.ts` | 无头引擎冒烟测试（`npm run smoke`）：回合循环 / 锁定 / 阈值推进 / 闹七支线 / 结局 |
 | `tools/split-dialogues.py` · `tools/mine-persona-evidence.py` · `tools/verify-personas.py` · `tools/audit-quotes.py` | 对话拆分 / 语料摘要 / 人设包质检 / 引文溯源审计 |
 
 ## 版本关系

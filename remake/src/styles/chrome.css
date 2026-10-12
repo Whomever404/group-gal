@@ -1,0 +1,340 @@
+/* 游戏界面之外的一切 —— 立绘舞台 / 抽屉 / galgame 面板 / 结局弹窗 / 浮层。
+ *
+ * 这里的排版一律走叙事语汇（--vn-*）：近黑靛底、暖纸色的字、黄铜色强调。
+ * 唯一的例外是群成员抽屉——「群成员」本身就是 QQ 的概念，所以它保持客户端灰。 */
+
+#stageSil{
+  position:fixed;right:-2vw;bottom:-2vh;width:46vw;max-width:520px;opacity:.09;
+  pointer-events:none;z-index:3;transition:opacity .5s;
+}
+#stageSil svg{width:100%;height:auto}
+
+/* ---------- 抽屉：群成员（QQ）与 VN 面板共用容器 ---------- */
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(380px,90vw);z-index:30;
+  background:var(--qq-surface);
+  border-left:1px solid var(--qq-line);
+  transform:translateX(100%);
+  transition:transform .28s var(--ease);
+  display:flex;flex-direction:column;
+  padding-top:var(--safe-t);padding-bottom:var(--safe-b);padding-right:var(--safe-r);
+}
+.drawer.open{transform:none}
+.dr-h{
+  padding:var(--sp-4);border-bottom:1px solid var(--qq-line-soft);
+  display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);
+}
+.dr-h b{font-size:16px;font-weight:600;color:var(--qq-txt)}
+.dr-list{flex:1;overflow-y:auto;padding:var(--sp-3);overscroll-behavior:contain}
+
+/* 通用小按钮（抽屉 / 面板的表头） */
+.mini{
+  font-size:13px;color:var(--qq-dim);
+  border:1px solid var(--qq-line);border-radius:6px;
+  padding:10px 14px;min-height:44px;
+  transition:color var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease);
+}
+.mini:hover{color:var(--qq-txt);border-color:#3c3c3c}
+.mini.danger{color:var(--qq-danger)}
+.mini.danger:hover{border-color:var(--qq-danger)}
+
+/* ---------- 群成员行 ---------- */
+.dr-row{
+  display:flex;gap:var(--sp-3);align-items:center;
+  padding:10px var(--sp-3);border-radius:8px;margin-bottom:2px;
+}
+.dr-row:hover{background:var(--qq-surface-hi)}
+.dr-row .av{width:42px;height:42px;flex:0 0 42px;font-size:21px}
+.dr-mid{flex:1;min-width:0}
+.dr-mid .t{font-size:14.5px;font-weight:600;color:var(--qq-txt)}
+.dr-mid .s{font-size:var(--fs-qq-name);color:var(--qq-dim);margin-top:1px}
+
+.bar{height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:7px;overflow:hidden}
+.bar i{
+  display:block;height:100%;width:0;border-radius:3px;
+  background:var(--stage,var(--qq-mention));
+  transition:width .5s var(--ease);
+}
+/* 好感阶段：每个阶段一个色，同时驱动进度条与判定文字 */
+.dr-row[data-stage="无视"]{--stage:#6e7288}
+.dr-row[data-stage="眼熟"]{--stage:#f0a03c}
+.dr-row[data-stage="嘴替"]{--stage:#5ce1e6}
+.dr-row[data-stage="宝宝"]{--stage:#e6e6e6}
+.dr-row[data-stage="沦陷"]{--stage:#ffd76e}
+.dr-stage{
+  font-family:var(--font-num);
+  font-size:10px;font-weight:700;letter-spacing:.06em;
+  min-width:46px;text-align:right;
+  color:var(--stage,var(--qq-dim));
+  white-space:nowrap;
+}
+
+/* ---------- VN 面板（回想 / 存档 / 设置 / 路线共用） ---------- */
+.drawer.vn-panel{
+  inset:0;width:auto;border:none;transform:none;
+  padding:var(--safe-t) var(--safe-r) var(--safe-b) var(--safe-l);
+  background:rgba(5,6,9,.74);
+  backdrop-filter:blur(7px);
+  align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .26s var(--ease);
+  z-index:34;
+}
+.drawer.vn-panel.open{opacity:1;pointer-events:auto}
+.vn-win{
+  width:min(760px,94vw);max-height:88vh;  display:flex;flex-direction:column;
+  background:linear-gradient(180deg, var(--vn-bg-2), #0c0f15);
+  border:1px solid var(--vn-line);
+  border-radius:var(--r-vn);
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+  animation:vnIn .3s var(--ease);
+  overflow:hidden;
+}
+@keyframes vnIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.vn-h{border-bottom:1px solid var(--vn-line);padding:15px 20px}
+.vn-h b{
+  font-family:var(--font-serif);font-size:21px;font-weight:700;
+  letter-spacing:.14em;color:var(--vn-ink);
+}
+.vn-panel .mini{color:var(--vn-dim);border-color:var(--vn-line)}
+.vn-panel .mini:hover{color:var(--vn-ink);border-color:var(--vn-accent)}
+.vn-panel .mini.danger{color:var(--vn-cold)}
+.vn-panel .mini.danger:hover{border-color:var(--vn-cold)}
+.vn-panel .dr-list{padding:var(--sp-4) 20px;overflow:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:rgba(236,231,221,.16) transparent}
+.vn-panel .dr-list::-webkit-scrollbar{width:8px;height:8px}
+.vn-panel .dr-list::-webkit-scrollbar-thumb{background:rgba(236,231,221,.16);border-radius:4px}
+.vn-panel .dr-list::-webkit-scrollbar-track{background:transparent}
+/* 路线图的分列流程图比较宽，给它一个加宽变体，并留出足够画布高度 */
+.vn-panel.wide .vn-win{width:min(1120px,96vw)}
+.vn-panel.wide .dr-list{min-height:min(68vh,560px)}
+
+/* ---------- 存档槽卡片 ---------- */
+.save-row{
+  display:flex;gap:var(--sp-4);align-items:center;
+  padding:var(--sp-4);
+  margin-bottom:10px;
+  border:1px solid var(--vn-line);
+  border-left:3px solid var(--vn-accent);
+  border-radius:var(--r-vn);
+  background:rgba(255,255,255,.015);
+  transition:border-color var(--dur-fast) var(--ease),background var(--dur-fast) var(--ease);
+}
+.save-row:hover{background:rgba(255,255,255,.04)}
+.save-row[data-slot="auto"]{border-left-color:var(--vn-dim)}
+.save-info{flex:1;min-width:0}
+.save-info .t{
+  font-family:var(--font-serif);font-size:16px;font-weight:700;
+  letter-spacing:.06em;color:var(--vn-ink);
+}
+.save-info .s{
+  font-size:var(--fs-vn-small);color:var(--vn-dim);margin-top:4px;
+  font-variant-numeric:tabular-nums;font-family:var(--font-num);
+}
+.save-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+
+/* ---------- 设置：分组的横排标签 + 选项 ---------- */
+.set-group{margin-bottom:var(--sp-5)}
+.set-group-h{
+  display:flex;align-items:baseline;gap:var(--sp-3);
+  margin-bottom:var(--sp-3);
+  font-family:var(--font-serif);
+  font-size:13px;letter-spacing:.28em;color:var(--vn-accent);
+  padding-bottom:8px;border-bottom:1px solid var(--vn-line);
+}
+.set-group-h span{flex:1;height:1px;background:var(--vn-line)}
+.set-row{
+  display:flex;gap:var(--sp-3);align-items:center;justify-content:space-between;
+  padding:12px var(--sp-2);border-radius:var(--r-vn);
+  border-bottom:1px solid rgba(236,231,221,.06);
+  flex-wrap:wrap;
+}
+.set-row:last-child{border-bottom:none}
+.set-row .set-lbl{font-size:14.5px;color:var(--vn-ink)}
+.set-speeds{display:flex;gap:6px}
+.set-speeds .mini{min-width:56px;text-align:center}
+.set-speeds .mini[aria-pressed="true"]{
+  color:var(--vn-bg);background:var(--vn-accent);border-color:var(--vn-accent);
+}
+.set-hint{font-size:var(--fs-vn-small);color:var(--vn-dim);line-height:1.7;margin:0 0 var(--sp-4)}
+.set-row input[type="checkbox"]{width:20px;height:20px;accent-color:var(--vn-accent);cursor:pointer}
+
+/* ---------- 回想（VN backlog 观感） ---------- */
+#panelBody .bl-list{display:flex;flex-direction:column;gap:2px}
+#panelBody [data-log]{margin:0;padding:11px 0;border-bottom:1px solid rgba(236,231,221,.06);animation:blIn .3s var(--ease)}
+@keyframes blIn{from{opacity:0}to{opacity:1}}
+#panelBody [data-log] .body{max-width:100%;display:block}
+#panelBody [data-log] .nm{
+  font-size:var(--fs-vn-small);font-weight:700;margin:0 0 4px;
+  letter-spacing:.06em;display:block;
+}
+#panelBody [data-log] .bub{
+  background:none;border:none;padding:0;
+  font-size:15px;line-height:1.75;color:var(--vn-ink);
+  border-radius:0;
+}
+#panelBody [data-log="me"] .nm{color:var(--vn-accent)}
+#panelBody [data-log="say"] .bub{color:var(--vn-ink)}
+#panelBody .msg{display:block;animation:none}
+#panelBody .note{
+  display:block;text-align:left;font-style:normal;color:var(--vn-dim);
+  font-size:var(--fs-vn-small);padding:0;
+}
+#panelBody .sys{display:block;text-align:left;color:var(--vn-dim);font-size:var(--fs-vn-small)}
+#panelBody .sys span{display:inline}
+
+/* ---------- 路线图（VN 流程图：分列 + 正交连线） ---------- */
+.rm-empty{padding:var(--sp-5) var(--sp-2);color:var(--vn-dim);font-size:var(--fs-vn-small);letter-spacing:.1em}
+/* 画布铺满面板，把承载内容的 .rm-grid 居中；grid 比画布高/宽时退化为贴左上、由面板滚动 */
+.rm-canvas{width:100%;min-height:100%;display:flex}
+.rm-grid{position:relative;flex:0 0 auto;margin:auto}
+
+/* 连线：走过的路用暖黄强调色，看得见；未探索的支线用冷灰虚线区分 */
+.rm-edges{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.rm-edge{fill:none;stroke:rgba(217,164,65,.62);stroke-width:1.6;stroke-linejoin:round}
+.rm-edge.back{stroke:rgba(217,164,65,.42);stroke-dasharray:5 4}
+.rm-edge.ghost{stroke:rgba(154,149,139,.6);stroke-dasharray:1 4;stroke-linecap:round}
+
+.rm-node{
+  position:absolute;
+  width:164px;height:48px;
+  display:flex;align-items:center;gap:8px;
+  padding:0 11px;
+  border:1px solid var(--vn-line);
+  border-left:3px solid var(--vn-dim);
+  border-radius:6px;
+  background:rgba(255,255,255,.035);
+  text-align:left;color:var(--vn-ink);font:inherit;
+  overflow:hidden;
+  transition:background .18s var(--ease),border-color .18s var(--ease);
+}
+button.rm-node{cursor:pointer}
+button.rm-node:hover,button.rm-node:focus-visible{background:rgba(217,164,65,.14);border-left-color:var(--vn-accent)}
+.rm-kind{
+  flex:0 0 auto;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  padding:2px 6px;border-radius:2px;color:var(--vn-dim);
+  background:rgba(255,255,255,.06);
+}
+.rm-title{
+  flex:1;min-width:0;font-size:12.5px;line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;word-break:break-word;
+}
+
+/* 幽灵「?」空位：小方块 + 虚线边，表示「有路没走过」，不可点击、无内容 */
+.rm-node.rm-ghost{
+  width:40px;height:40px;padding:0;
+  align-items:center;justify-content:center;
+  border-style:dashed;border-left-width:1px;border-left-color:var(--vn-dim);
+  border-radius:50%;
+  background:rgba(154,149,139,.08);
+  color:var(--vn-dim);font-size:16px;font-weight:700;line-height:1;
+  cursor:default;
+}
+
+/* 每一类节点一个色：左侧色条 + 徽章 */
+.rm-node[data-kind="hub"]{border-left-color:var(--vn-accent)}
+.rm-node[data-kind="hub"] .rm-kind{color:var(--vn-accent);background:var(--vn-accent-soft)}
+.rm-node[data-kind="choice"] .rm-kind{color:#7fd0d4;background:rgba(92,225,230,.12)}
+.rm-node[data-kind="be"]{border-left-color:var(--vn-cold)}
+.rm-node[data-kind="be"] .rm-kind{color:var(--vn-cold);background:var(--vn-cold-soft)}
+.rm-node[data-kind="be"] .rm-title{color:#b9c7de}
+.rm-node[data-kind="end"]{border-left-color:#e0b96a;background:rgba(224,185,106,.1)}
+.rm-node[data-kind="end"] .rm-kind{color:#e0b96a;background:rgba(224,185,106,.16)}
+
+/* ---------- 浮层 ---------- */
+#toasts{
+  position:fixed;left:50%;top:calc(64px + var(--safe-t));transform:translateX(-50%);
+  z-index:40;display:flex;flex-direction:column;gap:6px;align-items:center;
+  pointer-events:none;padding:0 var(--sp-4);width:max-content;max-width:92vw;
+}
+.toast{
+  background:rgba(10,10,12,.86);border:1px solid var(--qq-line);border-radius:6px;
+  padding:8px 16px;font-size:13px;color:var(--qq-txt);
+  animation:toast 1.7s var(--ease) forwards;
+  text-align:center;
+}
+@keyframes toast{
+  0%{opacity:0;transform:translateY(-8px)}
+  15%{opacity:1;transform:none}
+  80%{opacity:1}
+  100%{opacity:0}
+}
+
+/* ---------- 结局 / 关于弹窗（galgame 文本框） ---------- */
+.overlay{
+  position:fixed;inset:0;z-index:50;
+  background:radial-gradient(120% 90% at 50% 20%, rgba(0,0,0,.72), rgba(0,0,0,.94));
+  backdrop-filter:blur(9px);
+  display:flex;align-items:center;justify-content:center;
+  padding:calc(22px + var(--safe-t)) 20px calc(22px + var(--safe-b));
+}
+.ov{
+  width:min(600px,94vw);padding:clamp(26px,5vw,46px) clamp(22px,4.5vw,46px);
+  text-align:left;
+  border:1px solid var(--vn-line);
+  border-radius:var(--r-vn);
+  background:linear-gradient(180deg, var(--vn-bg-2), #0b0e14);
+  animation:ovIn .38s var(--ease);
+  max-height:88vh;overflow-y:auto;overscroll-behavior:contain;
+}
+@keyframes ovIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.ov .tag{
+  font-size:11px;letter-spacing:.4em;color:var(--vn-dim);
+  text-transform:uppercase;
+}
+.ov h2{
+  font-family:var(--font-serif);
+  font-size:var(--fs-vn-h2);font-weight:700;
+  margin:12px 0 var(--sp-5);letter-spacing:.03em;
+  color:var(--vn-ink);
+}
+/* 正文逐段呈现 */
+.ov-body{display:flex;flex-direction:column;gap:14px}
+.ov-body p{
+  font-size:var(--fs-vn-body);color:var(--vn-ink);line-height:1.95;
+  text-wrap:pretty;
+  animation:paraIn .45s var(--ease) both;
+}
+.ov-body p:nth-child(1){animation-delay:.08s}
+.ov-body p:nth-child(2){animation-delay:.22s}
+.ov-body p:nth-child(3){animation-delay:.36s}
+.ov-body p:nth-child(4){animation-delay:.5s}
+.ov-body p:nth-child(5){animation-delay:.64s}
+@keyframes paraIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.ov .btns{margin-top:var(--sp-5);display:flex;gap:10px;flex-wrap:wrap}
+.ov .btn{
+  font-size:14px;letter-spacing:.06em;color:var(--vn-ink);
+  border:1px solid var(--vn-line);border-radius:var(--r-vn);
+  padding:11px 22px;min-height:44px;background:rgba(255,255,255,.02);
+  transition:border-color var(--dur-fast) var(--ease),background var(--dur-fast) var(--ease);
+}
+.ov .btn:hover{border-color:var(--vn-accent)}
+.ov .btn.primary{background:var(--vn-accent);border-color:var(--vn-accent);color:#161206;font-weight:700}
+.ov .stat-sum{
+  margin-top:var(--sp-5);padding-top:var(--sp-4);
+  border-top:1px solid var(--vn-line);
+  font-size:var(--fs-vn-small);color:var(--vn-dim);line-height:2;
+}
+.ov .stat-sum b{color:var(--vn-accent);font-family:var(--font-num)}
+.ov .ov-note{margin-top:var(--sp-4);font-size:var(--fs-vn-small);color:var(--vn-dim);line-height:1.7}
+a{color:var(--vn-accent)}
+
+/* Bad End：冷色 */
+.be-ov{background:linear-gradient(180deg,#101723,#0a0d13);border-color:rgba(109,141,189,.4)}
+.be-ov .tag{color:var(--vn-cold)}
+.be-ov h2{color:var(--vn-cold)}
+/* 好结局：暖色 */
+.end-ov{background:linear-gradient(180deg,#1a150c,#0c0e14);border-color:rgba(217,164,65,.34)}
+.end-ov .tag{color:var(--vn-accent)}
+.end-ov h2{color:var(--vn-accent)}
+
+/* ---------- 窄屏 ---------- */
+@media(max-width:520px){
+  #stageSil{width:80vw;opacity:.07}
+  .drawer{width:min(340px,94vw)}
+  .ov{padding:var(--sp-5) var(--sp-4)}
+  .save-row{flex-wrap:wrap;gap:var(--sp-3)}
+  .save-actions{width:100%;justify-content:flex-start}
+}

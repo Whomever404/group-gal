@@ -1,0 +1,26 @@
+# 换行与编码归一化。
+# 仓库内一律以 LF 存储（与现状一致，不会产生重写 diff）；
+# 各家 checkout 出什么换行由各自的 core.autocrlf 决定，git 比较时会先归一化，
+# 因此跨平台协作不会再出现「整个文件被改」的假 diff。
+* text=auto
+
+*.ts    text
+*.js    text
+*.css   text
+*.html  text
+*.json  text
+*.md    text
+*.yml   text
+*.yaml  text
+
+# 二进制，禁止任何转换
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary

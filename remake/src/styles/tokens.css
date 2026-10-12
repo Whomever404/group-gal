@@ -1,0 +1,113 @@
+/* 设计令牌 —— 两套视觉语汇各用一个变量命名空间，刻意不共享颜色。
+ *
+ *   A · 群聊（手机 QQ 夜间模式）  --qq-*
+ *   B · 叙事（galgame）          --vn-*
+ *
+ * 游戏界面是「客户端的灰」：无渐变、无霓虹，只有一层层深浅不同的石墨灰，
+ * 配一个 QQ 蓝的自己的气泡。其余界面是 VN 的暖光：近黑的靛底 + 暖纸色的字 +
+ * 一点黄铜色的强调，Bad End 换成冷钢蓝。
+ *
+ * 字体不引 webfont：中文包体太大，且这个项目的卖点之一就是离线可玩。
+ * 叙事层的大标题用中文衬线（宋 / 明朝体）——那是 VN 这一体裁的排版语汇，
+ * 而不是任何页面都会用的系统无衬线默认。 */
+:root{
+  /* ---------- A · 群聊（QQ 夜间） ---------- */
+  --qq-bg:#121212;          /* 会话页底 */
+  --qq-panel:#1e1e1e;       /* 顶栏 / 输入栏 */
+  --qq-rail:#0c0c0c;        /* 桌面端最左竖导航（比会话区更深一层） */
+  --qq-list:#101010;        /* 桌面端会话列表（介于导航与会话页之间） */
+  --qq-surface:#262626;     /* 下拉菜单 / 抽屉 */
+  --qq-surface-hi:#2f2f2f;
+  --qq-line:#303030;        /* 发丝分隔线 */
+  --qq-line-soft:#292929;
+  --qq-bubble:#2c2c2c;      /* 他人气泡 */
+  --qq-bubble-self:#3b6ea5; /* 自己的气泡：QQ 蓝 */
+  --qq-txt:#e6e6e6;
+  --qq-dim:#8c8c8c;
+  --qq-dim-2:#6d6d6d;
+  --qq-mention:#4c9eea;     /* @提及 */
+  --qq-badge:#c79a4a;       /* 群头衔徽章 */
+  --qq-badge-bg:rgba(199,154,74,.15);
+  --qq-danger:#d9695f;
+  --qq-bubble-r:16px;
+
+  /* ---------- B · 叙事（galgame） ---------- */
+  --vn-bg:#0b0d12;          /* 近黑靛 */
+  --vn-bg-2:#151a24;
+  --vn-ink:#ece7dd;         /* 暖纸色正文 */
+  --vn-dim:#9a958b;
+  --vn-line:rgba(236,231,221,.13);
+  --vn-accent:#d9a441;      /* 暖 · 标题 / 好结局 */
+  --vn-accent-soft:rgba(217,164,65,.14);
+  --vn-cold:#6d8dbd;        /* 冷 · Bad End */
+  --vn-cold-soft:rgba(109,141,189,.16);
+
+  /* 沿用旧变量名作别名，避免渲染层（overlay/backlog）里的引用失效 */
+  --accent:var(--vn-accent);
+  --cyan:var(--qq-mention);
+  --dim:var(--vn-dim);
+
+  /* ---------- 字号 ---------- */
+  --fs-qq-msg:15px;
+  --fs-qq-name:12px;
+  --fs-qq-sys:12px;
+  --fs-qq-meta:11px;
+  --fs-vn-body:15.5px;
+  --fs-vn-small:12.5px;
+  --fs-vn-h2:clamp(23px,5vw,32px);
+  --fs-vn-display:clamp(52px,11.5vw,116px);
+
+  /* ---------- 间距 ---------- */
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:34px;
+
+  /* ---------- 圆角 ---------- */
+  --r-qq:8px;               /* QQ 头像是圆角方形，不是圆 */
+  --r-vn:3px;               /* VN 面板几乎不用圆角 */
+
+  /* ---------- 动效 ---------- */
+  --dur-fast:.16s;--dur:.24s;
+  --ease:cubic-bezier(.22,.61,.36,1);
+
+  /* ---------- 字体 ---------- */
+  --font-ui:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Noto Sans SC",system-ui,sans-serif;
+  --font-serif:"Songti SC","Source Han Serif SC","Noto Serif SC","SimSun",serif;
+  --font-num:ui-monospace,"SF Mono","Cascadia Mono",Consolas,"Liberation Mono",monospace;
+
+  /* ---------- 安全区 ---------- */
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-l:env(safe-area-inset-left,0px);
+  --safe-r:env(safe-area-inset-right,0px);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--vn-bg);
+  color:var(--vn-ink);
+  font-family:var(--font-ui);
+  font-size:var(--fs-vn-body);
+  line-height:1.65;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column}
+.hidden{display:none !important}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* 数字一眼区别于台词 */
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+/* 键盘可达：只在键盘操作时出现焦点环。两套语汇各用自己的强调色。 */
+:focus-visible{outline:2px solid var(--vn-accent);outline-offset:2px;border-radius:4px}
+#game :focus-visible{outline-color:var(--qq-mention)}
+
+/* 尊重系统的「减少动效」——这在一个消息逐条揭示的游戏里尤其重要 */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+}

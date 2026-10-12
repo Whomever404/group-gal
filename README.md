@@ -1,6 +1,6 @@
 # group-gal · 《😂群聊 · 全群攻陷计划》
 
-把两批真实 QQ 音游群聊记录（`members.zip`，5,325 条 / 52 名发言者）与一份成员画像分析报告（`report.pdf`）
+把两批真实 QQ 音游群聊记录（`legacy/materials/members.zip`，5,325 条 / 52 名发言者）与一份成员画像分析报告（`legacy/materials/report.pdf`）
 改编成的**单文件离线 Galgame**：你作为第 81 位群友入群，在一群嘴硬心软的人中间选择怎么说话。
 
 - **15 条角色线 + 23 个坏结局**，剧本按群友的说话方式整体重写
@@ -78,31 +78,30 @@ npm run build              # 单文件产物 + 校验前置
 npm run check:build        # 用 jsdom 加载产物，跑到回合循环并验证运营规则
 ```
 
-## 仓库里的其它东西
+## 仓库里还有什么
 
-| 文件 | 说明 |
+根目录只有**当前版本**需要的东西：
+
+| 路径 | 说明 |
 |------|------|
-| `group-chat-galgame-v2-modular.html` | ★ 当前版本的单文件构建（即 `dist/index.html`） |
-| `group-chat-galgame-v2.html` | v2.0 剧本单文件（重写版剧本的原始出处，历史版本） |
-| `group-chat-galgame-v1.html` | v1.0 合并版（以豆包版剧情为底 + 机制合并） |
-| `group-chat-galgame.html` | 版本一：v0.2 可玩 Demo（世界观与角色来源） |
-| `啥子豆包版本.html` | 版本二：豆包版 v1.0（引擎能力来源） |
-| `members.zip` / `report.pdf` | 群聊记录（原始导出）/ 综合分析报告 |
-| `dialogues/` | 群友对话按人拆分（52 个文件 + INDEX.md） |
-| `skills/immortals/` | **20 位群友的数字永生人设包**（immortal-skill 框架） |
-| `skills/immortal-skill/` | 数字永生框架本体（vendored） |
-| `docs/` | Code Wiki（架构 / 引擎 / 剧本 DSL / 素材管线 / 版本对比）。其中涉及旧 `src/` 的部分写于本次整合之前 |
-| `tools/*.py` | 语料管线：对话拆分 / 语料摘要 / 人设包质检 / 引文溯源审计 |
+| `group-chat-galgame-v2-modular.html` | ★ 当前版本的单文件构建（即 `dist/index.html`），双击即玩 |
+| `src/` · `tools/` · `docs/` | 工程源码 / 测试脚本 / Code Wiki |
+| `legacy/` | **历史资产**：上一代单文件版、它们的老工具、以及源素材与人设管线 |
+
+`legacy/` 里装的是什么、怎么跑，见 [legacy/README.md](legacy/README.md)：
+`legacy/versions/` 是四份历史单文件版（v0.2 / 豆包版 / v1.0 / v2.0，都能双击玩），
+`legacy/materials/` 是 `members.zip`、`report.pdf`、`dialogues/`、`skills/`（20 位群友的人设包）
+与语料管线脚本。
 
 ## 版本关系
 
 ```
-group-chat-galgame.html (v0.2) ──世界观 / 角色──► v2.0 剧本重写 ──┐
-啥子豆包版本.html (v1)         ──引擎能力──────► v1.0 合并版 ──┤
-                                                              ▼
-                              Vite + TypeScript 模块化引擎（LanGYou 的两版重写）
-                                                              ▼
-                                  本版：统一的工程 + 重写剧本 + 夜间运营机制
+legacy/versions/group-chat-galgame.html (v0.2) ──世界观 / 角色──► v2.0 剧本重写 ──┐
+legacy/versions/啥子豆包版本.html (v1)         ──引擎能力──────► v1.0 合并版 ──┤
+                                                                             ▼
+                                   Vite + TypeScript 模块化引擎（LanGYou 的两版重写）
+                                                                             ▼
+                                        本版：统一的工程 + 重写剧本 + 夜间运营机制
 ```
 
 > 所有角色均为基于群聊行为特征的二次虚构，与现实人物无关。

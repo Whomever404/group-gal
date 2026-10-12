@@ -1,9 +1,9 @@
 /* 剧本校验：跳转/引用完整性 + 主线与支线自动发现 + 全路线可达性（集束搜索）
-   用法：node tools/validate.js [目标HTML，默认 ../group-chat-galgame-v2.html]
+   用法：node legacy/tools/validate.js [目标HTML，默认 ../versions/group-chat-galgame-v2.html]
    兼容 v2（hub 支线结构）与 v1（线性选择结构）*/
 const fs = require("fs");
 const path = require("path");
-const target = process.argv[2] || path.join(__dirname, "..", "group-chat-galgame-v2.html");
+const target = process.argv[2] || path.join(__dirname, "..", "versions", "group-chat-galgame-v2.html");
 const src = fs.readFileSync(target, "utf8");
 function grab(startMark, endMark, ret) {
   const a = src.indexOf(startMark);

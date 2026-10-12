@@ -1,0 +1,307 @@
+/* 游戏界面 —— 手机 QQ 群聊客户端的观感。
+ *
+ * 三条纪律：
+ *  1. 灰。整屏只有石墨灰的深浅层次，唯一的彩色是自己的 QB 蓝气泡与蓝色 @提及。
+ *  2. 密。QQ 是紧凑的：头像 40px 圆角方形、昵称 12px 灰、正文 15px、行高 1.5。
+ *  3. 平。气泡是平的，不加阴影、不加渐变、不加霓虹描边。
+ */
+
+#game{
+  z-index:4;
+  background:var(--qq-bg);
+  padding-top:var(--safe-t);
+  padding-bottom:var(--safe-b);
+  padding-left:var(--safe-l);
+  padding-right:var(--safe-r);
+}
+
+/* ---------- 壳：窄屏单栏（手机 QQ）/ 宽屏三栏（NTQQ 桌面端） ---------- */
+/* 同一份 DOM，靠断点切换壳；导航栏与会话列表在窄屏是**隐藏**，不是挤扁。 */
+.qq-shell{flex:1;min-height:0;display:flex}
+.qq-rail{display:none}
+.qq-convs{display:none}
+.qq-main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
+
+@media(min-width:900px){
+  /* 最左竖导航：比会话区深一层 */
+  .qq-rail{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    flex:0 0 60px;padding:12px 0;
+    background:var(--qq-rail);
+    border-right:1px solid var(--qq-line-soft);
+  }
+  .qq-me{
+    width:38px;height:38px;border-radius:9px;margin-bottom:10px;
+    display:grid;place-items:center;font-size:20px;
+    background:var(--qq-surface);border:1px solid var(--qq-line);
+  }
+  .qq-nav{
+    width:40px;height:40px;border-radius:9px;
+    display:grid;place-items:center;font-size:19px;
+    color:var(--qq-dim);opacity:.82;
+  }
+  .qq-nav.is-on{color:var(--qq-txt);opacity:1;background:var(--qq-surface)}
+  /* 会话列表：本作只有一个群，就只放一条 */
+  .qq-convs{
+    display:block;flex:0 0 248px;overflow-y:auto;
+    background:var(--qq-list);
+    border-right:1px solid var(--qq-line-soft);
+  }
+  .qq-main{background:var(--qq-bg)}
+}
+
+/* 一条会话 = 群名 + 最后一条消息预览 + 时间 */
+.conv{display:flex;gap:10px;align-items:flex-start;padding:11px 12px}
+.conv.is-on{background:var(--qq-surface-hi)}
+.conv-av{
+  flex:0 0 40px;width:40px;height:40px;border-radius:9px;
+  display:grid;place-items:center;font-size:20px;
+  background:var(--qq-surface);border:1px solid var(--qq-line);
+}
+.conv-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.conv-name{font-size:14px;color:var(--qq-txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv-prev{font-size:12px;color:var(--qq-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv-time{flex:0 0 auto;font-size:11px;color:var(--qq-dim-2);padding-top:1px}
+
+/* ---------- 顶栏 ---------- */
+.topbar{
+  display:flex;align-items:center;gap:var(--sp-2);
+  padding:var(--sp-2) var(--sp-3);
+  min-height:54px;
+  background:var(--qq-panel);
+  border-bottom:1px solid var(--qq-line-soft);
+  position:relative;z-index:2;
+}
+.tb-back{
+  flex:0 0 auto;width:44px;height:44px;
+  display:grid;place-items:center;
+  font-size:26px;line-height:1;color:var(--qq-txt);
+  border-radius:50%;
+  transition:background var(--dur-fast) var(--ease);
+}
+.tb-back:active{background:var(--qq-surface-hi)}
+.tb-title{flex:1;min-width:0;line-height:1.25}
+.tb-name{
+  font-size:16px;font-weight:600;color:var(--qq-txt);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tb-meta{
+  font-size:var(--fs-qq-meta);color:var(--qq-dim);
+  display:flex;gap:2px;align-items:baseline;white-space:nowrap;
+}
+.tb-meta b{font-family:var(--font-num);font-variant-numeric:tabular-nums;color:var(--qq-dim);font-weight:600}
+
+/* 资质徽标：真诚 / 嘴臭 / 卖弱 / 空気 / 水群。窄屏只留「空気」——它决定结局判定。 */
+.tb-stats{display:flex;gap:6px;align-items:center;flex:0 0 auto}
+.tb-stats .st{
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  min-width:30px;
+}
+.tb-stats .st i{
+  font-style:normal;font-size:9px;letter-spacing:.04em;color:var(--qq-dim);opacity:.75;
+}
+.tb-stats .st b{
+  font-family:var(--font-num);font-variant-numeric:tabular-nums;
+  font-size:13px;font-weight:700;color:var(--qq-txt);line-height:1.1;
+}
+.tb-stats .st:last-child b{color:var(--qq-mention)}
+@media (max-width:640px){
+  .tb-stats .st:not(:nth-child(4)){display:none}
+}
+.tb-more{
+  flex:0 0 auto;width:44px;height:44px;
+  display:grid;place-items:center;
+  font-size:22px;line-height:1;color:var(--qq-txt);
+  border-radius:50%;
+  transition:background var(--dur-fast) var(--ease);
+}
+.tb-more:active,.tb-more[aria-expanded="true"]{background:var(--qq-surface-hi)}
+
+/* ---------- ⋯ 收拢的群工具菜单 ---------- */
+.tb-menu{
+  position:absolute;z-index:20;
+  top:calc(58px + var(--safe-t));
+  right:calc(var(--sp-3) + var(--safe-r));
+  width:168px;padding:var(--sp-1);
+  background:var(--qq-surface);
+  border:1px solid var(--qq-line);
+  border-radius:10px;
+  box-shadow:0 12px 34px rgba(0,0,0,.5);
+  display:flex;flex-direction:column;
+  animation:menuIn .14s var(--ease);
+}
+@keyframes menuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.tb-menu .mi{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:11px 12px;border-radius:6px;
+  font-size:14px;color:var(--qq-txt);
+  min-height:44px;
+}
+.tb-menu .mi::before{content:attr(data-ic);font-size:15px;width:20px;text-align:center;opacity:.9}
+.tb-menu .mi:hover,.tb-menu .mi:focus-visible{background:var(--qq-surface-hi)}
+
+/* ---------- 聊天流 ---------- */
+.chat{
+  flex:1;overflow-y:auto;
+  padding-block:var(--sp-3) var(--sp-2);
+  /* 可读列上限：宽屏上不让气泡散进巨大的空白里 */
+  /* 消息铺满聊天区，而不是居中成一条窄列——真实聊天客户端就是这样，
+   他人贴左、自己贴右，两边都用到。宽度上限交给气泡自身的 max-width。 */
+  padding-inline:clamp(var(--sp-3), 2.4vw, 40px);
+  scroll-behavior:smooth;
+  overscroll-behavior-y:contain;
+}
+.chat::-webkit-scrollbar{width:6px}
+.chat::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
+.chat::-webkit-scrollbar-track{background:transparent}
+
+/* 时间分割：QQ 在会话开头放一条居中的极淡灰字 */
+.msg-day{
+  text-align:center;margin:var(--sp-4) 0 var(--sp-2);
+  font-size:11px;color:var(--qq-dim-2);
+}
+
+/* 一条消息一次揭示，不做特效堆叠 */
+.msg{display:flex;gap:10px;margin:10px 0;align-items:flex-start;animation:reveal var(--dur) var(--ease)}
+@keyframes reveal{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* QQ 头像是圆角方形，不是圆 */
+.av{
+  width:40px;height:40px;flex:0 0 40px;border-radius:var(--r-qq);
+  display:grid;place-items:center;font-size:20px;
+  border:1px solid var(--qq-line);
+}
+.body{max-width:70%;min-width:0}
+.nm{
+  font-size:var(--fs-qq-name);color:var(--qq-dim);margin:0 2px 4px;
+  display:flex;gap:6px;align-items:center;flex-wrap:wrap;
+}
+/* 群头衔：QQ 那种小徽章 */
+.nm .role{
+  font-size:10px;line-height:1.5;color:var(--qq-badge);
+  background:var(--qq-badge-bg);
+  padding:0 6px;border-radius:3px;
+}
+.bub{
+  background:var(--qq-bubble);
+  border-radius:3px var(--qq-bubble-r) var(--qq-bubble-r) var(--qq-bubble-r);
+  padding:9px 13px;
+  font-size:var(--fs-qq-msg);
+  line-height:1.5;
+  color:var(--qq-txt);
+  word-break:break-word;
+  text-wrap:pretty;
+}
+/* 同一人连续发言：不重复头像与昵称，气泡继续往下叠（QQ 行为） */
+.msg.cont{margin-top:3px}
+.msg.cont .body{margin-left:50px}
+
+.msg.me{flex-direction:row-reverse}
+.msg.me .body{display:flex;flex-direction:column;align-items:flex-end}
+.msg.me .cont-body{}
+.msg.me .bub{
+  background:var(--qq-bubble-self);
+  border-radius:var(--qq-bubble-r) 3px var(--qq-bubble-r) var(--qq-bubble-r);
+  color:#fff;
+}
+.msg.me.cont .body{margin-left:0;margin-right:50px}
+
+/* @提及：蓝色高亮 */
+.bub .mn{color:var(--qq-mention)}
+
+/* 系统消息：QQ 那种无边框居中小灰字 */
+.sys,.note{text-align:center;margin:var(--sp-3) 0;animation:reveal var(--dur) var(--ease)}
+.sys{font-size:var(--fs-qq-sys);color:var(--qq-dim-2)}
+.sys span{display:inline-block}
+.note{
+  font-size:13px;color:var(--qq-dim);font-style:italic;
+  padding:var(--sp-2) var(--sp-4);text-wrap:pretty;
+}
+
+/* ---------- 角色卡（群名片） ---------- */
+.card{
+  margin:var(--sp-4) auto;width:min(420px,94%);
+  display:flex;gap:var(--sp-3);align-items:center;
+  background:var(--qq-surface);
+  border:1px solid var(--qq-line);border-radius:10px;
+  padding:var(--sp-3);animation:reveal var(--dur) var(--ease);
+}
+.card .sil{flex:0 0 72px}
+.card .cinfo{min-width:0}
+.card .cinfo h4{font-size:16px;font-weight:600;display:flex;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;color:var(--qq-txt)}
+.card .cinfo h4 span{font-size:11px;color:var(--qq-dim) !important}
+.card .cinfo .r{font-size:var(--fs-qq-name);color:var(--qq-badge);margin-top:3px}
+.card .cinfo p{font-size:var(--fs-qq-name);color:var(--qq-dim);margin-top:6px;line-height:1.6;text-wrap:pretty}
+
+/* ---------- 输入区（承载的是选项，不是打字） ---------- */
+.composer{
+  padding-block:var(--sp-2) var(--sp-2);
+  /* 消息铺满聊天区，而不是居中成一条窄列——真实聊天客户端就是这样，
+   他人贴左、自己贴右，两边都用到。宽度上限交给气泡自身的 max-width。 */
+  padding-inline:clamp(var(--sp-3), 2.4vw, 40px);
+  background:var(--qq-panel);
+  border-top:1px solid var(--qq-line-soft);
+  max-height:56vh;
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+}
+
+/* 候选：从输入框上方弹出的选项列表（QQ 快捷回复的观感） */
+.c-cands{
+  display:flex;flex-direction:column;gap:6px;
+  padding:var(--sp-2) var(--sp-2) var(--sp-3);
+  animation:candIn .18s var(--ease);
+}
+@keyframes candIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.choice{
+  width:100%;text-align:left;
+  background:var(--qq-surface);
+  border:1px solid var(--qq-line);
+  border-radius:8px;
+  padding:12px 14px;
+  font-size:14px;line-height:1.5;color:var(--qq-txt);
+  min-height:44px;
+  text-wrap:pretty;
+  transition:background var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease);
+}
+.choice:hover,.choice:focus-visible{background:var(--qq-surface-hi);border-color:#3a3a3a}
+.choice:active{transform:scale(.995)}
+
+/* 输入条：纯外观。左侧表情位、圆角输入条、右侧发送位 */
+.c-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:0 var(--sp-1);
+  min-height:48px;
+}
+.c-ic{
+  flex:0 0 auto;width:36px;height:36px;border-radius:50%;
+  display:grid;place-items:center;font-size:19px;color:var(--qq-dim);
+  transition:background var(--dur-fast) var(--ease);
+}
+.c-ic:active{background:var(--qq-surface-hi)}
+/* NTQQ 工具栏里多出来的图标：只在宽屏出现 */
+.wide-only{display:none}
+@media(min-width:900px){ .wide-only{display:grid} }
+.c-field{
+  flex:1;min-width:0;
+  display:flex;align-items:center;
+  background:var(--qq-surface);
+  border-radius:18px;
+  padding:9px 15px;
+  min-height:36px;
+}
+.c-prompt,.c-idle{
+  font-size:14px;color:var(--qq-dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.c-prompt{color:var(--qq-txt);opacity:.85;white-space:normal}
+.c-send{
+  flex:0 0 auto;width:36px;height:36px;border-radius:50%;
+  display:grid;place-items:center;font-size:16px;
+  background:var(--qq-bubble-self);color:#fff;
+}
+
+/* ---------- 窄屏 ---------- */
+@media(max-width:520px){
+  .body{max-width:76%}
+}

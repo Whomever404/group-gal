@@ -8,7 +8,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "check:script": "tsx src/engine/validate.cli.ts",
-    "smoke": "node tools/smoke-test.js"
+    "smoke": "tsx tools/smoke-loop.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

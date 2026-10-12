@@ -6,6 +6,8 @@ import { CH } from '../content/characters';
 import { ENDINGS } from '../content/endings';
 import { GE_SLOTS } from '../content/endings';
 import { PRIORITY, ROUTE_START } from '../content/route';
+import { ARC_STEPS, CANDIDATES, LOOP_ADVANCE, THRESHOLD } from '../content/loop';
+import { EVENTS } from '../content/events';
 
 export interface ValidationReport {
   readonly errors: readonly string[];
@@ -68,6 +70,20 @@ export function validateScript(): ValidationReport {
   PRIORITY.forEach(k => { if (!CH[k]) errors.push(`PRIORITY：CH 缺少「${k}」`); });
   Object.entries(ROUTE_START).forEach(([k, id]) => { if (!NODES[id]) errors.push(`ROUTE_START「${k}」-> ${id} 不存在`); });
 
+  /* ---------- 回合循环配置 ---------- */
+  if (!NODES['loop'] || !NODES['loop'].loop) errors.push('缺少 loop 节点（或未标记 loop:true）');
+  CANDIDATES.forEach(c => {
+    if (!CH[c.key]) errors.push(`CANDIDATES：CH 缺少「${c.key}」`);
+    const st = ARC_STEPS[c.key];
+    if (!st) errors.push(`ARC_STEPS：缺少「${c.key}」`);
+    else st.forEach(e => { if (!NODES[e]) errors.push(`ARC_STEPS「${c.key}」-> ${e} 不存在`); });
+  });
+  if (CANDIDATES.length !== PRIORITY.length) errors.push(`CANDIDATES 数量 ${CANDIDATES.length} ≠ 可攻略角色 ${PRIORITY.length}`);
+  PRIORITY.forEach(k => { if (!CANDIDATES.some(c => c.key === k)) errors.push(`CANDIDATES 缺少可攻略角色「${k}」`); });
+  if (!NODES[LOOP_ADVANCE]) errors.push(`LOOP_ADVANCE -> ${LOOP_ADVANCE} 不存在`);
+  if (THRESHOLD <= 0) errors.push('THRESHOLD 必须为正');
+  EVENTS.forEach(e => { if (!NODES[e.entry]) errors.push(`EVENTS「${e.id}」-> ${e.entry} 不存在`); });
+
   /* ---------- 可达性：自 start 出发的图遍历 ---------- */
   const reach = new Set<string>();
   const queue: string[] = ['start'];
@@ -82,6 +98,12 @@ export function validateScript(): ValidationReport {
     (n.o || []).forEach(o => push(o[1]));
     // 分岔之夜在运行时落到某条角色线入口
     if (n.j === 'branch') PRIORITY.forEach(k => push(ROUTE_START[k]));
+    // 回合循环在运行时落到全部候选支线 / 事件 / 主线推进
+    if (n.loop) {
+      Object.keys(ARC_STEPS).forEach(k => (ARC_STEPS[k] || []).forEach(e => push(e)));
+      EVENTS.forEach(e => push(e.entry));
+      push(LOOP_ADVANCE);
+    }
   }
 
   const unreachable = Object.keys(NODES).filter(id => !reach.has(id));

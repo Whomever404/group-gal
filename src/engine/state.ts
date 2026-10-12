@@ -16,6 +16,8 @@ export function freshState(): GameState {
     se: true,
     bgm: true,
     trk: 'title',
+    target: null,
+    turn: 0,
   };
 }
 

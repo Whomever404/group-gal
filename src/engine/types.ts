@@ -67,6 +67,8 @@ export interface Node {
   readonly j?: 'branch';
   /** hub 节点标记：选项带第 4 位「一次性」标记。 */
   readonly hub?: boolean;
+  /** 回合循环节点标记：由引擎动态生成「对象支线 + 随机事件」选项。 */
+  readonly loop?: boolean;
 }
 
 export type Script = Readonly<Record<string, Node>>;
@@ -103,6 +105,10 @@ export interface GameState {
   trk: string;
   /** 上次分岔走向 */
   lastRoute?: string;
+  /** 回合循环：首次选定的攻略对象（锁定后不再更换） */
+  target?: string | null;
+  /** 回合循环：已进行的回合数（运营计数） */
+  turn?: number;
 }
 
 /** 阅读偏好：手动/自动 + 三档速度。 */

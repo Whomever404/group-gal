@@ -5,7 +5,7 @@
     python3 tools/mine-persona-evidence.py                 # 全部 20 位
     python3 tools/mine-persona-evidence.py nanao cat       # 指定 slug
 
-输入：dialogues/<昵称>_<QQ>.md（由 tools/split-dialogues.py 生成）
+输入：dialogues/<昵称>_<QQ>.md（由 pipeline/split-dialogues.py 生成）
 输出：skills/immortals/_evidence/<slug>.md（供蒸馏时引用与核对，非交付产物）
 说明：摘要中含 TA 本人的原话（verbatim）；他人提及只作 impression 参考。
 """

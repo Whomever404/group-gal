@@ -31,7 +31,7 @@
 | 03 | [核心引擎与关键函数](./03-核心引擎与关键函数.md) | 节点解释器、18 种节点、回合循环、分岔之夜、结局、结算、复读、校验器、存档、函数速查 |
 | 04 | [数据模型与剧本 DSL](./04-数据模型与剧本DSL.md) | 怎么写剧本：DSL 字段速查、扁平节点全表、循环配置、状态对象、结局数据、加剧情的步骤 |
 | 05 | [依赖关系与运行方式](./05-依赖关系与运行方式.md) | 环境要求、依赖、全部命令、三种游玩方式、构建产物、校验与测试、键位、存档、常见问题 |
-| 06 | [参考素材与内容管线](./06-参考素材与内容管线.md) | members.zip / report.pdf 解读、角色映射表、群文化 → 机制映射、内容生产流程、伦理红线 |
+| 06 | [参考素材与内容管线](./06-参考素材与内容管线.md) | 素材（`legacy/materials/` 里的 members.zip / report.pdf）解读、角色映射表、群文化 → 机制映射、内容生产流程、伦理红线 |
 | 07 | [版本对比与合并说明](./07-版本对比与v1.0合并说明.md) | v0.2 / 豆包版 / v1.0 / v2.0 对比与合并过程、修过的缺陷、结局总表、**§9 统一版（当前主版本）** |
 
 ## 4. 我想做什么 → 看哪一篇
@@ -46,28 +46,31 @@
 | 加一段剧情 | [04-数据模型与剧本 DSL](./04-数据模型与剧本DSL.md) 的「加剧情的操作步骤」 |
 | 确认剧本没写坏 | `npm run check:script`（跳转 / 角色键 / BE 文案 / 可达性都会检查） |
 | 跑一遍自动化验证 | `npm run smoke`（无头引擎）+ `npm run check:build`（真加载产物走一遍） |
-| 看群友人设档案 | [skills/immortals/README.md](../skills/immortals/README.md)（20 位群友的语料蒸馏人设包） |
+| 看群友人设档案 | [legacy/materials/skills/immortals/README.md](../legacy/materials/skills/immortals/README.md)（20 位群友的语料蒸馏人设包） |
 | 查历史版本 | [07-版本对比与合并说明](./07-版本对比与v1.0合并说明.md) |
 
 ## 5. 三代版本速查
 
 | 代 | 代表文件 | 引擎特征 | 剧本 | 结局 |
 |----|---------|---------|------|------|
-| 单文件 v0.2 | `group-chat-galgame.html` | 数组剧本 + 线性播放；复读 / 水群值 / 成员抽屉 | 原作 | 7 线序章 + 9 BE |
-| 单文件 豆包版 | `啥子豆包版本.html` | 节点图 + 打字机 + 存档 + 回收室（含 3 处缺陷） | 豆包创作 | 15 线 + 18 BE |
-| 单文件 v1.0 | `group-chat-galgame-v1.html` | 豆包版引擎 + v0.2 机制合并 + 缺陷修复 | 豆包剧情为底 | 15 线 + 23 BE |
-| 单文件 v2.0 | `group-chat-galgame-v2.html` | v1 引擎 + hub 一次性支线 + 配件立绘 | **全部重写**（零引用豆包台词） | 15 线 + 23 BE |
+| 单文件 v0.2 | `legacy/versions/group-chat-galgame.html` | 数组剧本 + 线性播放；复读 / 水群值 / 成员抽屉 | 原作 | 7 线序章 + 9 BE |
+| 单文件 豆包版 | `legacy/versions/啥子豆包版本.html` | 节点图 + 打字机 + 存档 + 回收室（含 3 处缺陷） | 豆包创作 | 15 线 + 18 BE |
+| 单文件 v1.0 | `legacy/versions/group-chat-galgame-v1.html` | 豆包版引擎 + v0.2 机制合并 + 缺陷修复 | 豆包剧情为底 | 15 线 + 23 BE |
+| 单文件 v2.0 | `legacy/versions/group-chat-galgame-v2.html` | v1 引擎 + hub 一次性支线 + 配件立绘 | **全部重写**（零引用豆包台词） | 15 线 + 23 BE |
 | Vite + TS 重写 | （LanGYou 的 `remake`，已并入本版） | 引擎零 DOM、剧本图校验器、回想 / 多槽存档 / 路线图 | 原版搬运 | 11 线 + 9 BE |
 | **统一版** ★ | 根目录工程 + `dist/index.html` | **remake 的引擎与界面 + 我们的剧本与夜间运营** | **v2.0 重写版** | **15 线 + 23 BE** |
 
 ## 6. 仓库文件一览
 
+**根目录只留当前版本**（工程、产物、文档）；上一代的东西全部收在 `legacy/`。
+
 ```
 /workspace
 ├── README.md                              # 仓库根说明
 ├── index.html                             # Vite 开发入口（含启动兜底提示）
-├── package.json / vite.config.ts / tsconfig.json
+├── package.json / package-lock.json / vite.config.ts / tsconfig.json
 ├── start.sh                               # 本地服务器 + file:// 双保险
+├── group-chat-galgame-v2-modular.html     # ★ 当前版本的单文件构建（dist/index.html 的副本）
 ├── src/
 │   ├── engine/                            # types / runner / effects / validate / route-map / persist
 │   ├── content/                           # script + arcs/* + events + loop + characters + endings + adapt
@@ -76,15 +79,13 @@
 │   └── styles/                            # tokens / title / chat / chrome
 ├── tools/
 │   ├── smoke.ts                           # 无头引擎测试（npm run smoke）
-│   ├── boot-check.mjs                     # 构建产物端到端测试（npm run check:build）
-│   ├── validate.js · smoke-test.js        # 上一代单文件版的校验 / 冒烟（针对 group-chat-galgame-v2.html）
-│   └── split-dialogues.py · mine-persona-evidence.py · verify-personas.py · audit-quotes.py
+│   └── boot-check.mjs                     # 构建产物端到端测试（npm run check:build）
+├── dist/                                  # npm run build 的产物（gitignore）
 ├── docs/                                  # 本 Code Wiki
-├── group-chat-galgame*.html · 啥子豆包版本.html    # 历史单文件版本（不参与构建）
-├── members.zip                            # 52 份按 QQ 号归档的群聊记录（原始导出）
-├── dialogues/                             # 按人拆分后的对话集（52 个 <昵称>_<QQ>.md + INDEX.md）
-├── report.pdf                             # 两批群聊记录综合分析报告（23 页）
-└── skills/
-    ├── immortal-skill/                    # 数字永生框架（vendored）
-    └── immortals/                         # 20 位群友的人设包（SKILL.md + 三维度 + conflicts + manifest）
+└── legacy/                                # 历史资产：旧版本 / 老工具 / 源素材与人设管线
+    ├── README.md                          # 这里是什么、怎么跑
+    ├── versions/                          # v0.2 / 豆包版 / v1.0 / v2.0 四份单文件历史版本（都能双击玩）
+    ├── tools/                             # validate.js · smoke-test.js（上一代单文件版的校验与冒烟）
+    └── materials/                         # members.zip · report.pdf · dialogues/ · skills/
+        └── pipeline/                      # 语料管线：split-dialogues / mine-persona-evidence / verify-personas / audit-quotes
 ```

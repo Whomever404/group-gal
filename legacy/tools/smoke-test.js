@@ -1,7 +1,7 @@
 /* 《😂群聊 · 全群攻陷计划》v2.0 · jsdom 端到端冒烟测试
    用法：
      npm i -D jsdom
-     node tools/smoke-test.js [目标HTML，默认 ../group-chat-galgame-v2.html]
+     node legacy/tools/smoke-test.js [目标HTML，默认 ../versions/group-chat-galgame-v2.html]
    覆盖：加载 → 序章/开场聊天 → 第二章 hub 支线（一次性）→ 分岔 → 整条线通关
          → 复读禁言 BE → 羁绊抽屉 → 回收室 / 第 81 人 / 蘑菇汤际遇 → 结局协议
 */
@@ -9,7 +9,7 @@ const fs = require("fs");
 const path = require("path");
 const { JSDOM, VirtualConsole } = require("jsdom");
 
-const target = process.argv[2] || path.join(__dirname, "..", "group-chat-galgame-v2.html");
+const target = process.argv[2] || path.join(__dirname, "..", "versions", "group-chat-galgame-v2.html");
 const html = fs.readFileSync(target, "utf8");
 const logs = [];
 const vc = new VirtualConsole();

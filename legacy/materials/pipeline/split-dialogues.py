@@ -2,9 +2,9 @@
 """把 members.zip（按 QQ 号归档的群聊记录）拆分为「一人一文件」的对话文本。
 
 用法：
-    python3 tools/split-dialogues.py [members.zip] [输出目录]
+    python3 legacy/materials/pipeline/split-dialogues.py [members.zip] [输出目录]
 默认：
-    python3 tools/split-dialogues.py            # members.zip -> dialogues/
+    python3 legacy/materials/pipeline/split-dialogues.py   # members.zip -> dialogues/
 
 输出：
     dialogues/<昵称>_<QQ号>.md    每位群友一个文件（含时间戳的对话行）

@@ -1,0 +1,27 @@
+{
+  "slug": "langyou",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:13941"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "ccf0449a8ad6d098",
+    "personality.md": "168cc3468aa202ac",
+    "interaction.md": "00ba5356e973460e",
+    "memory.md": "a9cbc265a2036a0c",
+    "conflicts.md": "734cf56ecad58c9c",
+    "phrasebook.md": "adf34a7fa4dd81be"
+  }
+}

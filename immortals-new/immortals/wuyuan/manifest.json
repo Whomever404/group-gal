@@ -1,0 +1,27 @@
+{
+  "slug": "wuyuan",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:4801"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "b90b813c9220eb57",
+    "personality.md": "36bb43d7350e0e9c",
+    "interaction.md": "845c29c2a59ea95e",
+    "memory.md": "6b9878d53e458ee3",
+    "conflicts.md": "c9b2c9b5e671ef64",
+    "phrasebook.md": "f1c5bcfc69cbc1ab"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "slug": "rge",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:4342"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "4d88e17a9e311fe2",
+    "personality.md": "6970f0a0d7efae93",
+    "interaction.md": "31ffe8197807da4d",
+    "memory.md": "2976c1a4dc029216",
+    "conflicts.md": "2f4adc6af8620cb8",
+    "phrasebook.md": "3b440e3bed1e9e68"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "slug": "taffy",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:3946"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "874a56caf7a244fc",
+    "personality.md": "ba9f1210dc93cd6b",
+    "interaction.md": "a4e50e2aa78d9943",
+    "memory.md": "cab86afe18388750",
+    "conflicts.md": "b1dfcec2feaf4a14",
+    "phrasebook.md": "36431f7dbd4e6bc4"
+  }
+}

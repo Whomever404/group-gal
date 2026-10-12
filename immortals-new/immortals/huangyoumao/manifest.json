@@ -1,0 +1,27 @@
+{
+  "slug": "huangyoumao",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:5821"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "1c2133bf563eff8c",
+    "personality.md": "11a72bd55ee6c3c2",
+    "interaction.md": "ac6e0a6699ab0dbd",
+    "memory.md": "173152b33dce446e",
+    "conflicts.md": "5bf8fb8293e8642b",
+    "phrasebook.md": "745d631c3be72390"
+  }
+}

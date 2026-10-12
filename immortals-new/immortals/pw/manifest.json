@@ -1,0 +1,27 @@
+{
+  "slug": "pw",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:2698"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "b7c24630c723e7c7",
+    "personality.md": "a6da6d2fb92dee37",
+    "interaction.md": "e45823306e6ad06f",
+    "memory.md": "19125d9e1f249226",
+    "conflicts.md": "40500b7ebddaf88e",
+    "phrasebook.md": "b243649fe36f94b4"
+  }
+}

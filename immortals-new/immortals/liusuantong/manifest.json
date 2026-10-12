@@ -1,0 +1,27 @@
+{
+  "slug": "liusuantong",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:1431"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "b3eb74b9f7d0cbe7",
+    "personality.md": "31d15097ba4d6ba0",
+    "interaction.md": "af8de4691fc98e85",
+    "memory.md": "e14d189f4eb07469",
+    "conflicts.md": "ee7116aaf4da21c7",
+    "phrasebook.md": "6cf2e9202ec8aaa2"
+  }
+}

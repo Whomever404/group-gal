@@ -1,0 +1,27 @@
+{
+  "slug": "shisuan",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:16304"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "13ced1a09a2f0593",
+    "personality.md": "83034cf2a803e352",
+    "interaction.md": "0ac0556e42f25580",
+    "memory.md": "58eadc7f28c269b2",
+    "conflicts.md": "1feabf0320c909a8",
+    "phrasebook.md": "c1e131263813f139"
+  }
+}

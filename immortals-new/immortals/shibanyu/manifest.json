@@ -1,0 +1,27 @@
+{
+  "slug": "shibanyu",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:5960"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "e304d270f98fa2f7",
+    "personality.md": "7f6ad0c646c826fe",
+    "interaction.md": "ba5ee67c79f70290",
+    "memory.md": "e31347420df07dcb",
+    "conflicts.md": "5ea1b99ece6f82a3",
+    "phrasebook.md": "5a3950e01980918f"
+  }
+}

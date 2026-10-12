@@ -1,0 +1,27 @@
+{
+  "slug": "feide",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:1288"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "85c6d9ceeb5fd663",
+    "personality.md": "bfcc38da033512ba",
+    "interaction.md": "182e7f4ccf18914e",
+    "memory.md": "79026c2e97367673",
+    "conflicts.md": "ee3469a87f30dce8",
+    "phrasebook.md": "ea6d3ea05f9877ce"
+  }
+}

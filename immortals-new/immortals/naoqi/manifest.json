@@ -1,0 +1,27 @@
+{
+  "slug": "naoqi",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:30767"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "34e725f2706d248b",
+    "personality.md": "bb2117c6b6287da7",
+    "interaction.md": "5430474871557dd5",
+    "memory.md": "980c913bcba0e9bb",
+    "conflicts.md": "ba5d72dcc5476ba4",
+    "phrasebook.md": "7e50e4ec4e0c82fd"
+  }
+}

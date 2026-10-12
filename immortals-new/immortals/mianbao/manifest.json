@@ -1,0 +1,27 @@
+{
+  "slug": "mianbao",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:5703"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "4d2b8662b964bf6c",
+    "personality.md": "a7a43c255ce8d2a9",
+    "interaction.md": "3891c397e63c6be5",
+    "memory.md": "491572395bca32de",
+    "conflicts.md": "9ff456204342c98c",
+    "phrasebook.md": "342d3e35e566b92c"
+  }
+}

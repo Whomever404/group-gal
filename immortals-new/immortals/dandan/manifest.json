@@ -1,0 +1,27 @@
+{
+  "slug": "dandan",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:6360"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "ed4791d435f4876e",
+    "personality.md": "5216be707c1b5f1b",
+    "interaction.md": "529ef881224f0d99",
+    "memory.md": "5b4aa37d8474963f",
+    "conflicts.md": "60b99fcad0b5eea9",
+    "phrasebook.md": "486628d0e6766f7d"
+  }
+}

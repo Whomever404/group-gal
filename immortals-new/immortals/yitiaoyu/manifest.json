@@ -1,0 +1,27 @@
+{
+  "slug": "yitiaoyu",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:37546"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "887f91d2e3a6351c",
+    "personality.md": "73d7605022f98938",
+    "interaction.md": "5d6560079e792289",
+    "memory.md": "d603106ffe947add",
+    "conflicts.md": "784b680736345499",
+    "phrasebook.md": "cf2e07d470fa684b"
+  }
+}

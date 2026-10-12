@@ -1,0 +1,27 @@
+{
+  "slug": "c30586",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:1033"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "82885c9d05753ab1",
+    "personality.md": "b80eb943b311850b",
+    "interaction.md": "ddbfc21bbf1bab37",
+    "memory.md": "98dea0afdd9d4109",
+    "conflicts.md": "b638d6ccba693184",
+    "phrasebook.md": "1998c93777eb0881"
+  }
+}

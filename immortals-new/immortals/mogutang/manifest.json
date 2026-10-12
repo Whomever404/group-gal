@@ -1,0 +1,27 @@
+{
+  "slug": "mogutang",
+  "persona": "friend",
+  "built_at": "2026-10-13T00:00:00Z",
+  "sources_summarized": [
+    "qq-group:【里】😂群聊 | 行（1058585968）2026-07-12 ~ 2026-10-12",
+    "member_messages:1455"
+  ],
+  "platforms": [
+    "qq-group"
+  ],
+  "kit": "immortal-skill",
+  "dimensions": [
+    "interaction",
+    "memory",
+    "personality",
+    "phrasebook"
+  ],
+  "fingerprints": {
+    "SKILL.md": "ead16621eaaabebb",
+    "personality.md": "f7566eb84b2480d1",
+    "interaction.md": "9303011d77cea9b7",
+    "memory.md": "485c5fddeba3e638",
+    "conflicts.md": "1cb4c1791da4f51e",
+    "phrasebook.md": "734cc18a2ec2bb18"
+  }
+}

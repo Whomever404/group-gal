@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>😂群聊 · 全群攻陷计划 · v2.0 完整版</title>
+</head>
+<body>
+
+<!-- ================= TITLE ================= -->
+<div class="screen on" id="s-title">
+  <div class="title-wrap">
+    <div class="title-logo">😂 群 聊 · 恋 爱 模 拟 ADV</div>
+    <div class="title-main">全群攻陷计划</div>
+    <div class="title-emoji">👑🐟🧄🥚🥖</div>
+    <div class="title-sub">—— 第 81 位群友的攻略日志 ——</div>
+    <div class="title-sub" style="font-size:12px;letter-spacing:.12em;margin-top:8px">v2.0 完整版 · 15 条角色线 + 23 个坏结局 · 单文件离线可玩</div>
+    <div class="menu">
+      <button id="btn-start">▶ &nbsp;开始游戏</button>
+      <button id="btn-continue" disabled>↩ &nbsp;继续游戏</button>
+      <button id="btn-gallery1">🕳️ &nbsp;结局回收室</button>
+      <button id="btn-about">♪ &nbsp;音乐 / 关于</button>
+    </div>
+  </div>
+  <div class="title-foot">单文件离线版 · 双击本 HTML 即可游玩 · 所有角色均为虚构改编 · 剧情取材自群聊记录</div>
+</div>
+
+<!-- ================= GAME ================= -->
+<div class="screen" id="s-game">
+  <div class="topbar">
+    <span class="daychip" id="daychip">序章</span>
+    <div class="stats">
+      <span class="stat hide-sm">真诚 <b id="st-z">0</b></span>
+      <span class="stat hide-sm">嘴臭 <b id="st-r">0</b></span>
+      <span class="stat hide-sm">卖弱 <b id="st-m">0</b></span>
+      <span class="stat">空気 <b id="st-q">0</b></span>
+      <span class="stat hide-sm">水群 <b id="st-w">0</b></span>
+    </div>
+    <button class="tbtn" id="btn-members" title="群成员 · 羁绊面板">👥</button>
+    <button class="tbtn" id="btn-repeat" title="复读上一条群消息（同一句刷三次会被禁言）">📣</button>
+    <button class="tbtn" id="btn-auto" title="自动播放开关（A）">▶<span class="cap" id="cap-auto">手动</span></button>
+    <button class="tbtn" id="btn-speed" title="文字速度切换（S）">🐢<span class="cap" id="cap-speed">慢</span></button>
+    <button class="tbtn" id="btn-sound" title="音效">🔊</button>
+    <button class="tbtn" id="btn-music" title="BGM">🎵</button>
+    <button class="tbtn" id="btn-home" title="回标题">⌂</button>
+  </div>
+
+  <div class="stage">
+    <!-- CHAT -->
+    <div class="phone" id="phone">
+      <div class="ph-status"><span>😂群聊</span><span id="ph-time">23:59</span></div>
+      <div class="ph-title"><span>😂</span><span class="n">😂群聊</span><span style="color:var(--dim);font-size:12px;font-weight:400">(81)</span></div>
+      <div class="chat-scroll" id="chat"></div>
+      <div class="choices" id="choices" style="display:none"></div>
+    </div>
+
+    <!-- AVG -->
+    <div class="avg-scene" id="avg">
+      <div class="bg" id="avgbg"></div>
+      <div class="char" id="avgchar"></div>
+      <div class="avg-box">
+        <div class="nameplate" id="avgname" style="display:none"></div>
+        <div class="avg-text" id="avgtext"></div>
+        <div class="avg-choices" id="avgchoices" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="next-hint" id="nthint">点击屏幕继续 ▼</div>
+  </div>
+</div>
+
+<!-- ================= GALLERY ================= -->
+<div class="screen" id="s-gallery">
+  <button class="gal-back" id="btn-galback">← 返回</button>
+  <div class="gal-head">
+    <h2>🕳️ 结局回收室</h2>
+    <p id="gal-progress"></p>
+  </div>
+  <div class="gal-scroll">
+    <div class="gal-h3">💢 坏结局（BAD END）</div>
+    <div class="gal-grid" id="gal-bad"></div>
+    <div class="gal-h3">💎 好结局（GOOD END · 共 15 个）</div>
+    <div class="gal-grid" id="gal-good"></div>
+  </div>
+</div>
+
+<!-- ================= MUSIC MODAL ================= -->
+<div class="modal" id="modal-music">
+  <div class="modal-card">
+    <h3>♪ 音乐设置</h3>
+    <div class="mrow"><span>BGM 开关</span><button id="m-bgm">开</button></div>
+    <div class="mrow"><span>音效</span><button id="m-se">开</button></div>
+    <div class="mrow" style="flex-wrap:wrap">
+      <span>合成 BGM 曲目</span>
+      <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+        <button data-trk="title">标题</button>
+        <button data-trk="daily">日常</button>
+        <button data-trk="night">深夜</button>
+        <button data-trk="tense">群战</button>
+        <button data-trk="end">撤回</button>
+      </span>
+    </div>
+    <div class="mrow"><span>播放本地音乐<br><small style="color:var(--dim)">可选你拥有版权的 mp3/ogg</small></span>
+      <button id="m-file">选择文件…</button></div>
+    <input type="file" id="file-input" accept="audio/*" style="display:none">
+    <div class="mnote">
+      内置 BGM 全部由 Web Audio 实时合成，零音频文件、可离线。<br>
+      Arcaea 官方乐曲版权属于 lowiro，无法随游戏内置；如想边玩边听，可用「选择文件」读取你本地已拥有的音频（仅本机播放，不会上传）。
+    </div>
+  </div>
+</div>
+
+<!-- ================= ABOUT MODAL ================= -->
+<div class="modal" id="modal-about">
+  <div class="modal-card">
+    <h3>关于本作</h3>
+    <div class="mnote" style="margin-top:0;font-size:13px;line-height:1.9">
+      《😂群聊 · 全群攻陷计划》单文件离线版 v2.0 完整版<br>
+      · 世界观与角色沿用 v0.2（group-chat-galgame.html）；全部剧情与台词重写<br>
+      · 结构：序章 → 第一章 新人报道 → 第二章「群日常」15 条支线 → 第三章 躲猫猫之夜 → 分岔 → 15 条角色线<br>
+      · 23 个坏结局 + 15 个好结局，全部可回收（结局回收室）<br>
+      · 存档自动保存在本机浏览器 localStorage（键 xqxq_gal_v2）<br><br>
+      操作：点击 / 空格推进（打字中点击可立即补完）；顶栏或快捷键 A 切换手动/自动播放，S 切换慢/普/快三档文字速度，默认手动·慢速。Esc 关闭抽屉 / 弹窗。<br>
+      · 👥 群成员：查看全员羁绊（无视→眼熟→嘴替→宝宝→沦陷）<br>
+      · 📣 复读：复读上一条群消息、水群值 +1；同一句刷屏 3 次会被禁言（刷屏 END）<br>
+      选择肢会改变资质与羁绊：分岔之夜自动走向羁绊最高者；「空気」攒到 3 则会走向「第 81 人 END」。<br><br>
+      素材说明：立绘为 SVG 现场绘制的半透明剪影；BGM 由 Web Audio 实时合成，零音频文件、可离线。若想边玩边听真实曲目，可在「音乐设置」中选择你本地拥有版权的音频（仅本机播放，不会上传）。备选免费曲源：
+      <a href="https://dova-s.jp/en/" target="_blank">DOVA-SYNDROME</a>、
+      <a href="https://opengameart.org/content/yoiyami-core-theme-%E2%80%93-deep-blue-ambient-piano" target="_blank">OpenGameArt（CC0）</a>、
+      <a href="https://potat0master.itch.io/free-background-music-for-visual-novels-bgm-pack-1" target="_blank">Potat0Master VN BGM</a>。<br><br>
+      剧情取材：群聊记录（members.zip）与成员画像报告（report.pdf）中的公开梗与行为特征；
+      所有角色均为二次虚构，与现实人物无关。
+    </div>
+    <div style="text-align:right;margin-top:14px"><button class="mrow-btn" id="about-close" style="border:1px solid var(--line);border-radius:999px;padding:8px 20px">知道了</button></div>
+  </div>
+</div>
+
+<!-- ================= 群成员 · 羁绊抽屉 ================= -->
+<div class="drawer" id="drawer">
+  <div class="dr-h"><b>👥 群成员 · 羁绊</b><button class="tbtn" id="btn-drawer-close">✕</button></div>
+  <div class="dr-list" id="dr-list"></div>
+  <div class="dr-note">羁绊越深，分岔之夜越可能走向 TA 的路线。<br>无视 → 眼熟 → 嘴替 → 宝宝 → 沦陷</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

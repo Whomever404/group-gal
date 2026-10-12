@@ -1,6 +1,6 @@
 import type { Session } from '../engine/types';
 import { migrateSave, serializeSession } from '../engine/persist';
-import { SCRIPT } from '../content/chapters';
+import { SCRIPT } from '../content';
 
 /**
  * 本地存档仓储——**全项目唯一允许碰 localStorage 的地方**。

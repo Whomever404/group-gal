@@ -1,5 +1,5 @@
 import type {
-  CheckpointState, GameState, LabelIndex, Node, Script, SessionProgress,
+  CheckpointState, GameState, LabelIndex, FlatNode, FlatScript, SessionProgress,
 } from './types';
 import { SCHEMA_VERSION } from './effects';
 
@@ -9,14 +9,16 @@ import { SCHEMA_VERSION } from './effects';
  * 节点 = 剧本里的每个 label（关键节点）。为避免与「节点」一词混淆，
  * 本文件里把图上的点叫 RouteMapNode。
  *
- * 分类靠**顺序扫描**：从 label 出发向后走，跳过 bgm / say / sys / note / card /
- * aff / set 这些「路过」节点，看碰到的第一个控制流节点是什么：
+ * 分类靠**顺序扫描**：从 label 出发向后走，跳过 bgm / say / sys / note / card / stage /
+ * chapter / aff / stat / set 这些「路过」节点，看碰到的第一个控制流节点是什么：
  *   - choice  → 'choice'（每个选项一条边）
  *   - hub     → 'hub'  （每个选项一条边）
+ *   - loop    → 'hub'  （首轮的全员候选即分支）
+ *   - branch  → 'hub'  （15 条角色线即分支）
  *   - be      → 'be'   （端子）
- *   - ending  → 'end'  （端子）
+ *   - ge      → 'end'  （端子）
  *   - goto    → 'scene'（单后继，指向 goto 的目标）
- * 剧本里有环（hub 回到自己、支线绕回 hub），但本函数只做一遍线性扫描、
+ * 剧本里有环（支线绕回中枢），但本函数只做一遍线性扫描、
  * 不递归，因此天然不会无限展开。
  */
 
@@ -44,18 +46,18 @@ export interface RouteMap {
 }
 
 /** 会打断顺序执行、需要用一条边表达的控制流节点。 */
-function isControl(n: Node): boolean {
-  return n.kind === 'choice' || n.kind === 'hub' || n.kind === 'be'
-    || n.kind === 'ending' || n.kind === 'goto' || n.kind === 'label';
+function isControl(n: FlatNode): boolean {
+  return n.kind === 'choice' || n.kind === 'hub' || n.kind === 'loop' || n.kind === 'branch'
+    || n.kind === 'be' || n.kind === 'ge' || n.kind === 'goto' || n.kind === 'label';
 }
 
 /** 该节点是否携带一段可直接当标题的文本。 */
-function textOf(n: Node): string | null {
+function textOf(n: FlatNode): string | null {
   return n.kind === 'say' || n.kind === 'sys' || n.kind === 'note' ? n.text : null;
 }
 
 /** 从 label 下标向后推导一个 RouteMapNode。 */
-function derive(script: Script, label: string, from: number): RouteMapNode {
+function derive(script: FlatScript, label: string, from: number): RouteMapNode {
   let title = '';
   let j = from + 1;
 
@@ -79,9 +81,22 @@ function derive(script: Script, label: string, from: number): RouteMapNode {
           choices: n.options.map(o => ({ label: o.label, goto: o.goto })),
           next: null,
         };
+      case 'loop':
+        // 循环中枢的动态选项无法静态穷举，路线图用「首轮的全员候选」代表它
+        return {
+          label, kind: 'hub', title: n.config.prompt,
+          choices: n.config.candidates.map(c => ({ label: c.label, goto: c.entry })),
+          next: null,
+        };
+      case 'branch':
+        return {
+          label, kind: 'hub', title: n.config.prompt,
+          choices: Object.entries(n.config.routes).map(([key, goto]) => ({ label: key, goto })),
+          next: null,
+        };
       case 'be':
         return { label, kind: 'be', title: title || label, choices: [], next: null };
-      case 'ending':
+      case 'ge':
         return { label, kind: 'end', title: title || label, choices: [], next: null };
       case 'goto':
         return { label, kind: 'scene', title: title || label, choices: [], next: n.label };
@@ -100,7 +115,7 @@ function derive(script: Script, label: string, from: number): RouteMapNode {
  *
  * @param labels 用于判定入口；入口优先取 `start`，否则取剧本里的第一个 label。
  */
-export function buildRouteMap(script: Script, labels: LabelIndex): RouteMap {
+export function buildRouteMap(script: FlatScript, labels: LabelIndex): RouteMap {
   const nodes: Record<string, RouteMapNode> = {};
   let first: string | null = null;
 
@@ -281,12 +296,16 @@ export function layoutRouteMap(map: RouteMap, progress: SessionProgress): RouteM
 export function toCheckpoint(state: GameState): CheckpointState {
   return {
     aff: state.aff,
+    stats: state.stats,
     flags: state.flags,
     water: state.water,
     members: state.members,
     hub: state.hub,
     lastRepeat: state.lastRepeat,
     repeatN: state.repeatN,
+    target: state.target,
+    turn: state.turn,
+    unlocked: state.unlocked,
   };
 }
 

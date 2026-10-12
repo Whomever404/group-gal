@@ -1,10 +1,26 @@
-# 依赖
+# ---------- 依赖 ----------
 node_modules/
 
-# 构建产物（单文件以 group-chat-galgame-*.html 形式提交）
+# ---------- 构建产物 ----------
+# dist/ 是 `npm run build` 的单文件产物；要分发的单文件以
+# group-chat-galgame-*.html 的形式提交在仓库根目录。
 dist/
+dist-pages/
+.vite/
+*.local
+*.tsbuildinfo
 
-# 系统 / 编辑器
+# ---------- 测试与工具缓存 ----------
+coverage/
+
+# ---------- 编辑器 / 系统 ----------
 .DS_Store
 Thumbs.db
+desktop.ini
+.idea/
+*.swp
 *.log
+
+# ---------- 人设档案 ----------
+# docs/persona/ 由群聊记录分析报告提炼而来，含真实 QQ 号与原始聊天内容。
+docs/persona/

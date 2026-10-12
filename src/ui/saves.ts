@@ -1,4 +1,4 @@
-import { SCRIPT } from '../content/chapters';
+import { SCRIPT } from '../content';
 import type { SaveSlotId, SlotInfo } from './storage';
 
 /**

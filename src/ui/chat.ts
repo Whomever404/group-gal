@@ -22,6 +22,8 @@ export interface ChatView {
   sys(text: string): void;
   note(text: string): void;
   card(who: CharKey): void;
+  /** 常驻舞台立绘（avg 场景用）；传 null 收起。不产生任何消息。 */
+  stage(who: CharKey | null): void;
   clear(): void;
 }
 
@@ -114,6 +116,12 @@ export function createChatView(
       scroll();
       setStage(who);
       onChange?.();
+    },
+
+    stage(who) {
+      setStage(who);
+      // avg 场景用 .stage-on 让立绘更醒目（CSS 只改透明度与位移，不动布局）
+      stageSil.classList.toggle('stage-on', who !== null);
     },
 
     clear() {

@@ -46,6 +46,8 @@ function delayFor(r: Renderer, ms: number): Promise<void> {
   const capped = r.delays.fast ? Math.min(ms, FAST_CAP_MS) : ms;
   // 免去一次宏任务调度：生产环境延时恒 > 0，这条分支只服务于测试与快进
   if (capped <= 0) return Promise.resolve();
+  // 界面层可提供可打断的等待（点击 / 空格推进）；没有就用普通定时器
+  if (r.delays.wait) return r.delays.wait(capped);
   return new Promise(resolve => { setTimeout(resolve, capped); });
 }
 
@@ -252,7 +254,7 @@ export async function run(session: Session, env: GameEnv, r: Renderer): Promise<
 
         const prompt = session.state.target
           ? turnPrompt(session.state, cfg.prompt, cfg.threshold, cfg.arcs[session.state.target]?.length ?? 0)
-          : `第 ${turn} 个晚上 · 群里 15 个人都值得深挖，先挑一个？`;
+          : `第 ${turn} 个晚上 · 群里 ${cfg.candidates.length} 个人都值得深挖，先挑一个？`;
 
         session.state = { ...session.state, turn };
 

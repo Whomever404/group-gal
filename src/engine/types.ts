@@ -271,6 +271,12 @@ export interface DelayPolicy {
   card: number;
   /** 快进时为 true，所有等待被钳制到上限 */
   fast: boolean;
+  /**
+   * 等待 `ms` 毫秒。**可以被玩家「点击 / 空格推进」提前结束**——
+   * 界面层持有那个可打断的等待，引擎只负责调用，因此引擎仍然零 DOM。
+   * 缺省时退回普通 `setTimeout`（无头测试不必实现它）。
+   */
+  wait?(ms: number): Promise<void>;
 }
 
 export type EndingResolution =

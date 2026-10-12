@@ -56,8 +56,25 @@ let settings: SettingsData = readSettings();
  * 可变对象，直接交给 Renderer 持有：runner 每次等待前都读一次 `fast`，
  * 所以快进能即时生效。**文字速度**来自设置（持久化），
  * **快进**是临时开关、每局重置——两者不可混淆。
+ *
+ * `wait` 是**可被打断的等待**：玩家点击 / 空格即可立刻结束当前这一句的等待，
+ * 也就是「推进」。引擎只调用它，不碰 DOM。
  */
-const delays: DelayPolicy = { ...delaysForSpeed(settings.speed), fast: false };
+let cutWait: (() => void) | null = null;
+
+const delays: DelayPolicy = {
+  ...delaysForSpeed(settings.speed),
+  fast: false,
+  wait(ms) {
+    return new Promise<void>(resolve => {
+      const timer = setTimeout(() => { cutWait = null; resolve(); }, ms);
+      cutWait = () => { clearTimeout(timer); cutWait = null; resolve(); };
+    });
+  },
+};
+
+/** 点击 / 空格推进：结束当前等待，让下一句立刻上屏。 */
+function advance(): void { cutWait?.(); }
 
 const renderer = createRenderer({
   chat, composer, overlay, toasts, delays,
@@ -394,7 +411,26 @@ document.addEventListener('keydown', e => {
     closePanel();
     overlay.close();
     setMenu(false);
+    return;
   }
+  // 空格 / 回车推进（弹窗与面板打开时不抢键）
+  if (e.code === 'Space' || e.code === 'Enter') {
+    if (overlay.isOpen() || shell.panel.classList.contains('open')) return;
+    e.preventDefault();
+    advance();
+  }
+});
+
+/**
+ * 点击推进：点在消息流或空白处都算，点在按钮上不算
+ * （选项、群工具、弹窗按钮都有自己的职责，不能被当成推进）。
+ */
+document.addEventListener('click', e => {
+  const t = e.target as HTMLElement | null;
+  if (t?.closest('button')) return;
+  if (overlay.isOpen() || shell.panel.classList.contains('open')) return;
+  if (shell.game.classList.contains('hidden')) return;
+  advance();
 });
 
 /* 标题页底部的角色剪影合影（纯装饰，点不到）。 */

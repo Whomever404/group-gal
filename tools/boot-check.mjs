@@ -88,7 +88,14 @@ async function advanceUntilChoice(limit = 240) {
   console.log('== 2. 开始游戏 ==');
   $('#btnStart').click();
   await wait(400);
-  $('#btnFast').click();                       // 快进：让 jsdom 里的推进快起来
+  ok($('#game').className.includes('hidden') === false, '切到游戏画面');
+
+  // 点击 / 空格推进：每次点击立刻结束当前这一句的等待
+  const before = $('.chat').children.length;
+  for (let i = 0; i < 6; i++) { $('.chat').click(); await wait(40); }
+  const after = $('.chat').children.length;
+  ok(after - before >= 4, '点击推进：6 次点击至少推进 4 条', { before, after });
+
   ok(await advanceUntilChoice(), '序章推进到第一个选择');
   const chat = $('.chat');
   ok(chat.querySelectorAll('.msg, .sys, .note').length > 0, '聊天流出消息', chat.children.length);
@@ -132,7 +139,7 @@ async function advanceUntilChoice(limit = 240) {
   console.log('== 6. 第二章回合循环（运营机制）==');
   $('#btnStart').click();
   await wait(300);
-  $('#btnFast').click();
+
   // 序章与第一章：每次都选第 2 项（这条路径不落 Bad End），一路推进到回合中枢
   let reachedLoop = false;
   for (let i = 0; i < 60 && !reachedLoop; i++) {

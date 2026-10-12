@@ -1,134 +1,206 @@
-/* 剧本静态校验：跳转/引用完整性 + 全节点可达性。
-   与 tools/validate.js 同源，但直接读取类型化内容模块，无需正则抽取。 */
-import type { CharKey, StatKey } from './types';
-import { NODES } from '../content/script';
-import { CH } from '../content/characters';
-import { ENDINGS } from '../content/endings';
-import { GE_SLOTS } from '../content/endings';
-import { PRIORITY, ROUTE_START } from '../content/route';
-import { ARC_STEPS, CANDIDATES, LOOP_ADVANCE, THRESHOLD } from '../content/loop';
-import { EVENTS } from '../content/events';
+import type {
+  BadEndData, BeId, CharTable, FlatNode, FlagKey, Label, LabelIndex, FlatScript,
+} from './types';
 
-export interface ValidationReport {
-  readonly errors: readonly string[];
-  readonly warnings: readonly string[];
-  readonly stats: {
-    readonly chars: number;
-    readonly nodes: number;
-    readonly endings: number;
-    readonly geSlots: number;
-    readonly reachable: number;
-    readonly routes: number;
-  };
+export interface ValidationIssue {
+  readonly level: 'error' | 'warn';
+  readonly code: string;
+  readonly message: string;
+  readonly index?: number;
 }
 
-const STAT_KEYS = 'zrmqw';
+/** 由引擎（ending.ts）读取的 flag，不算「设置了但没用」。 */
+const ENGINE_READ_FLAGS: readonly FlagKey[] = ['actGood', 'actSkip'];
 
-export function validateScript(): ValidationReport {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
-  const isTerminal = (to: string) => to.startsWith('__end_') || to.startsWith('__ge_');
-
-  function checkTarget(from: string, to: string | undefined): void {
-    if (to == null) return;
-    if (to.startsWith('__end_')) {
-      if (!ENDINGS[to.slice(6)]) errors.push(`${from} -> ${to}：ENDINGS 缺少「${to.slice(6)}」`);
-      return;
-    }
-    if (to.startsWith('__ge_')) {
-      if (!NODES['ge_' + to.slice(5)]) errors.push(`${from} -> ${to}：缺少节点 ge_${to.slice(5)}`);
-      return;
-    }
-    if (!NODES[to]) errors.push(`${from} -> ${to}：节点不存在`);
-  }
-
-  function checkFx(from: string, fx: { a?: Record<string, number>; s?: Record<string, number> } | null | undefined): void {
-    if (!fx) return;
-    for (const k in fx.a || {}) if (!CH[k]) errors.push(`${from}：fx.a 未知角色「${k}」`);
-    for (const k in fx.s || {}) if (!STAT_KEYS.includes(k)) errors.push(`${from}：fx.s 未知资质「${k}」`);
-  }
-
-  for (const [id, n] of Object.entries(NODES)) {
-    checkTarget(id, n.next);
-    (n.o || []).forEach((o, i) => {
-      checkTarget(`${id}.o${i}`, o[1]);
-      checkFx(`${id}.o${i}`, o[2]);
-    });
-    checkFx(id, n.fx);
-    if (n.c && n.c !== null && !CH[n.c]) errors.push(`${id}：立绘角色「${n.c}」不存在`);
-    const lines: readonly (readonly [string | null, string])[] = n.b || n.l || [];
-    lines.forEach(([k], i) => {
-      if (k && k !== '#' && !CH[k]) errors.push(`${id} 行${i}：说话人「${k}」不存在`);
-    });
-  }
-
-  GE_SLOTS.forEach(k => {
-    if (!NODES['ge_' + k]) errors.push(`GE_SLOTS：缺少节点 ge_${k}`);
-    if (!ROUTE_START[k]) errors.push(`GE_SLOTS：ROUTE_START 缺少「${k}」`);
-  });
-  PRIORITY.forEach(k => { if (!CH[k]) errors.push(`PRIORITY：CH 缺少「${k}」`); });
-  Object.entries(ROUTE_START).forEach(([k, id]) => { if (!NODES[id]) errors.push(`ROUTE_START「${k}」-> ${id} 不存在`); });
-
-  /* ---------- 回合循环配置 ---------- */
-  if (!NODES['loop'] || !NODES['loop'].loop) errors.push('缺少 loop 节点（或未标记 loop:true）');
-  CANDIDATES.forEach(c => {
-    if (!CH[c.key]) errors.push(`CANDIDATES：CH 缺少「${c.key}」`);
-    const st = ARC_STEPS[c.key];
-    if (!st) errors.push(`ARC_STEPS：缺少「${c.key}」`);
-    else st.forEach(e => { if (!NODES[e]) errors.push(`ARC_STEPS「${c.key}」-> ${e} 不存在`); });
-  });
-  if (CANDIDATES.length !== PRIORITY.length) errors.push(`CANDIDATES 数量 ${CANDIDATES.length} ≠ 可攻略角色 ${PRIORITY.length}`);
-  PRIORITY.forEach(k => { if (!CANDIDATES.some(c => c.key === k)) errors.push(`CANDIDATES 缺少可攻略角色「${k}」`); });
-  if (!NODES[LOOP_ADVANCE]) errors.push(`LOOP_ADVANCE -> ${LOOP_ADVANCE} 不存在`);
-  if (THRESHOLD <= 0) errors.push('THRESHOLD 必须为正');
-  EVENTS.forEach(e => { if (!NODES[e.entry]) errors.push(`EVENTS「${e.id}」-> ${e.entry} 不存在`); });
-
-  /* ---------- 可达性：自 start 出发的图遍历 ---------- */
-  const reach = new Set<string>();
-  const queue: string[] = ['start'];
-  while (queue.length) {
-    const id = queue.shift()!;
-    if (reach.has(id)) continue;
-    const n = NODES[id];
-    if (!n) continue;
-    reach.add(id);
-    const push = (to: string | undefined) => { if (to && !isTerminal(to) && !reach.has(to)) queue.push(to); };
-    push(n.next);
-    (n.o || []).forEach(o => push(o[1]));
-    // 分岔之夜在运行时落到某条角色线入口
-    if (n.j === 'branch') PRIORITY.forEach(k => push(ROUTE_START[k]));
-    // 回合循环在运行时落到全部候选支线 / 事件 / 主线推进
-    if (n.loop) {
-      Object.keys(ARC_STEPS).forEach(k => (ARC_STEPS[k] || []).forEach(e => push(e)));
-      EVENTS.forEach(e => push(e.entry));
-      push(LOOP_ADVANCE);
-    }
-  }
-
-  const unreachable = Object.keys(NODES).filter(id => !reach.has(id));
-  if (unreachable.length) warnings.push(`不可达节点（${unreachable.length}）：${unreachable.join(', ')}`);
-
-  const routes = PRIORITY.filter(k => reach.has(ROUTE_START[k]) && reach.has('ge_' + k)).length;
-  if (routes !== PRIORITY.length) {
-    const miss = PRIORITY.filter(k => !(reach.has(ROUTE_START[k]) && reach.has('ge_' + k)));
-    errors.push(`角色线可达性不足：${routes}/${PRIORITY.length}，缺失 ${miss.join(', ')}`);
-  }
-
-  return {
-    errors,
-    warnings,
-    stats: {
-      chars: Object.keys(CH).length,
-      nodes: Object.keys(NODES).length,
-      endings: Object.keys(ENDINGS).length,
-      geSlots: GE_SLOTS.length,
-      reachable: reach.size,
-      routes,
-    },
-  };
+export function buildLabelIndex(script: FlatScript): LabelIndex {
+  const idx: Record<Label, number> = {};
+  script.forEach((n, i) => { if (n.kind === 'label') idx[n.name] = i; });
+  return idx;
 }
 
-/** 供 UI 复用的类型守卫（避免 as 断言散落）。 */
-export function isStatKey(k: string): k is StatKey { return STAT_KEYS.includes(k); }
-export function isCharKey(k: string): k is CharKey { return !!CH[k]; }
+/**
+ * 收集一个节点里所有的跳转目标。
+ *
+ * `loop` / `branch` 是**数据驱动的分支节点**——它们的可选去向写在节点自带的配置里，
+ * 因此校验器能像看 choice 一样看见它们的每一条边（这正是把配置放进节点的原因）。
+ */
+function gotoTargets(n: FlatNode): Label[] {
+  switch (n.kind) {
+    case 'goto': return [n.label];
+    case 'choice': return n.options.map(o => o.goto);
+    case 'hub': return n.options.map(o => o.goto);
+    case 'loop': return [
+      ...n.config.candidates.map(c => c.entry),
+      ...Object.values(n.config.arcs).flatMap(steps => steps.map(s => s.entry)),
+      ...n.config.events.map(e => e.entry),
+      n.config.advance,
+    ];
+    case 'branch': return Object.values(n.config.routes);
+    default: return [];
+  }
+}
+
+/**
+ * 校验整份剧本。errors 会让构建失败，warnings 仅供提示。
+ *
+ * 这是消灭「goto 拼错 → 静默通关」那类 bug 的地方：
+ * 校验在构建前置步骤跑，剧本写坏则构建失败，而不是等玩家踩到。
+ */
+export function validateScript(
+  script: FlatScript,
+  chars: CharTable,
+  beData: Readonly<Record<BeId, BadEndData>>,
+): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const labels = buildLabelIndex(script);
+
+  // 1. 起始节点必须是 start 标签（runner 从 ip=0 起步）
+  if (!('start' in labels)) {
+    issues.push({ level: 'error', code: 'start-missing', message: '剧本缺少 start 标签' });
+  } else if (labels['start'] !== 0) {
+    issues.push({
+      level: 'error', code: 'start-not-first',
+      message: `start 标签不在第 0 个节点（实际在 #${labels['start']}）`, index: labels['start'],
+    });
+  }
+
+  // 2. label 唯一
+  const seen = new Set<Label>();
+  script.forEach((n, i) => {
+    if (n.kind !== 'label') return;
+    if (seen.has(n.name)) {
+      issues.push({ level: 'error', code: 'label-duplicate', message: `label 重复：${n.name}`, index: i });
+    }
+    seen.add(n.name);
+  });
+
+  // 3. 逐节点检查跳转目标 / 角色键 / BE / hub id
+  script.forEach((n, i) => {
+    for (const target of gotoTargets(n)) {
+      if (!(target in labels)) {
+        issues.push({ level: 'error', code: 'goto-unknown', message: `goto 目标不存在：${target}`, index: i });
+      }
+    }
+
+    const whoKeys: string[] = [];
+    if (n.kind === 'say') whoKeys.push(n.who);
+    if (n.kind === 'card') whoKeys.push(n.who);
+    if (n.kind === 'stage' && n.who !== null) whoKeys.push(n.who);
+    for (const k of whoKeys) {
+      if (k !== 'me' && !(k in chars)) {
+        issues.push({ level: 'error', code: 'char-unknown', message: `角色键不存在：${k}`, index: i });
+      }
+    }
+
+    if (n.kind === 'be' && !(n.id in beData)) {
+      issues.push({ level: 'error', code: 'be-unknown', message: `Bad End 缺少文本：${n.id}`, index: i });
+    }
+
+    if (n.kind === 'branch' && !(n.config.beWhenAirless in beData)) {
+      issues.push({
+        level: 'error', code: 'be-unknown',
+        message: `Bad End 缺少文本：${n.config.beWhenAirless}`, index: i,
+      });
+    }
+
+    if (n.kind === 'ge' && !(n.key in chars)) {
+      issues.push({ level: 'error', code: 'char-unknown', message: `角色键不存在：${n.key}`, index: i });
+    }
+
+    if (n.kind === 'hub') {
+      const local = new Set<string>();
+      for (const o of n.options) {
+        if (local.has(o.id)) {
+          issues.push({ level: 'error', code: 'hub-id-duplicate', message: `hub 选项 id 重复：${o.id}`, index: i });
+        }
+        local.add(o.id);
+      }
+    }
+
+    // 循环中枢：候选 / 支线 / 事件都要有去向，且去重键不能撞
+    if (n.kind === 'loop') {
+      const ids = new Set<string>();
+      const dupId = (id: string): void => {
+        if (ids.has(id)) {
+          issues.push({ level: 'error', code: 'loop-id-duplicate', message: `循环选项 id 重复：${id}`, index: i });
+        }
+        ids.add(id);
+      };
+      n.config.candidates.forEach(c => dupId('pick_' + c.key));
+      Object.entries(n.config.arcs).forEach(([key, steps]) => {
+        steps.forEach((_, k) => dupId(`seg${k}_${key}`));
+      });
+      n.config.events.forEach(e => dupId('ev_' + e.id));
+      if (n.config.arcs && Object.keys(n.config.arcs).length === 0) {
+        issues.push({ level: 'error', code: 'loop-no-arcs', message: '循环中枢没有任何本命支线', index: i });
+      }
+    }
+  });
+
+  // 4. 可达性
+  const reachable = computeReachable(script, labels);
+  script.forEach((n, i) => {
+    if (!reachable.has(i)) {
+      issues.push({ level: 'warn', code: 'unreachable', message: `节点不可达：${n.kind}`, index: i });
+    }
+  });
+
+  // 5. flag 使用情况
+  const setFlags = new Set<string>();
+  for (const n of script) {
+    if (n.kind === 'set') setFlags.add(n.flag);
+    if (n.kind === 'choice') for (const o of n.options) if (o.set) setFlags.add(o.set);
+    if (n.kind === 'hub') for (const o of n.options) if (o.set) setFlags.add(o.set);
+  }
+  for (const f of setFlags) {
+    if (!ENGINE_READ_FLAGS.includes(f as FlagKey)) {
+      issues.push({ level: 'warn', code: 'flag-unused', message: `flag 设置了但从未读取：${f}` });
+    }
+  }
+
+  return issues;
+}
+
+/**
+ * 顺序扫描 + 跳转闭包，判断每个节点是否可达。
+ * 从 start 出发，顺序推进；遇到 goto 则改从目标继续；
+ * 遇到 choice/hub/loop/branch 则把所有分支目标入队；遇到 be/ge 则终止。
+ */
+function computeReachable(script: FlatScript, labels: LabelIndex): Set<number> {
+  const reachable = new Set<number>();
+  const queue: number[] = [labels['start'] ?? 0];
+
+  while (queue.length > 0) {
+    const from = queue.pop()!;
+    let i = from;
+    while (i < script.length && !reachable.has(i)) {
+      reachable.add(i);
+      const n = script[i]!;
+      if (n.kind === 'goto') {
+        const target = labels[n.label];
+        if (target !== undefined) queue.push(target);
+        break;
+      }
+      if (n.kind === 'choice' || n.kind === 'hub' || n.kind === 'loop' || n.kind === 'branch') {
+        for (const t of gotoTargets(n)) {
+          const target = labels[t];
+          if (target !== undefined) queue.push(target);
+        }
+        break;
+      }
+      if (n.kind === 'be' || n.kind === 'ge') break;
+      i++;
+    }
+  }
+  return reachable;
+}
+
+export function formatIssues(issues: readonly ValidationIssue[]): string {
+  return issues
+    .map(i => {
+      const mark = i.level === 'error' ? '✗' : '⚠';
+      const at = i.index !== undefined ? `（节点 #${i.index}）` : '';
+      return `${mark} [${i.code}] ${i.message}${at}`;
+    })
+    .join('\n');
+}

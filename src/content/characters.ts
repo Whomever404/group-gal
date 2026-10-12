@@ -1,56 +1,96 @@
-/* 角色元数据与立绘配件 —— 自 v2 单文件抽取，键名沿用 v0.2。 */
-import type { Character } from '../engine/types';
+import type { CharKey, CharTable } from '../engine/types';
 
-export const CH: Record<string, Character> = {
-  nanao  :{n:"闹七", e:"👑", c:"#ff6ec7", h:"crown",   sub:"Null7323 · 群主 / 服主 / 音游皇帝"},
-  yu     :{n:"一条鱼", e:"🐟", c:"#5ce1e6", h:"fish",  sub:"别问她为什么叫鱼 · 机械动力"},
-  cat    :{n:"黄油猫", e:"🐱", c:"#ffd76e", h:"cat",   sub:"黄油猫是我妈妈，· 医学系守门猫"},
-  g      :{n:"G", e:"🅶", c:"#a06bff", h:"star",       sub:"Lriltu · 反骨管理员"},
-  shisuan:{n:"石蒜", e:"🧄", c:"#8be08b", h:"garlic",  sub:"信这个不如信我是男娘"},
-  tttt   :{n:"Tttt", e:"🎭", c:"#ff9f6e", h:"mask",    sub:"起外号专家 · 面包是我的"},
-  shei   :{n:"誰", e:"🥚", c:"#cfcfe8", h:"egg",       sub:"又名蛋蛋 · 群gal攻略中"},
-  shiban :{n:"石斑鱼", e:"🐠", c:"#7fe0c0", h:"fin",   sub:"🪨🦓🐟 · 循环《冷漠群友不请我吃肯德基》"},
-  taffy  :{n:"taffy", e:"🧦", c:"#ffb3d9", h:"bucket", sub:"看我落地水！"},
-  c30586 :{n:"30586", e:"🍗", c:"#ffcf6e", h:"moon",   sub:"何时mc · 不来我人没了"},
-  mianbao:{n:"面包", e:"🥖", c:"#f0c98a", h:"bread",  sub:"高冷发图人 · 拍框大王"},
-  mibu   :{n:"咪猫布", e:"💊", c:"#7ad0c0", h:"pill",  sub:"医学系 · 一百三十斤的大飞猪"},
-  linxi  :{n:"凛～～熙", e:"📈", c:"#9fc8ff", h:"chart",sub:"我是努力b！· 成绩图轰炸机"},
-  gen    :{n:"根哥", e:"🧑‍🔧", c:"#7fb0ff", h:"wrench",sub:"Unity 实训开发 · 不是爸爸"},
-  aka    :{n:"aka", e:"📉", c:"#9ad0ff", h:"wave",    sub:"token 情报商 · 降智预警"},
-  moku   :{n:"蘑菇汤", e:"🍄", c:"#ff5a78", h:"mushroom",sub:"藤原氏 · 群规挑战者"},
-  you    :{n:"我", e:"🙂", c:"#7d8fa8", h:"dot",       sub:"第 81 位群友"}
+/**
+ * 16 个角色：15 名可攻略 + 1 名反派（蘑菇汤，不可攻略）。
+ *
+ * 文案与群名片沿用 v2 重写版的设定（`sub` 是群里的自我签名）；
+ * `role` / `desc` 是界面用的短标签与简介，只在新版呈现里出现。
+ */
+export const CHARS: CharTable = {
+  nanao: {
+    name: '闹七', sub: 'Null7323 · 群主 / 服主', emoji: '👑', color: '#ff6ec7', role: '傲娇暴君',
+    desc: '自建 MC / 帕鲁服务器，还是 Arcaea 谱师。嘴上天天喊解散群，真踢起人来一次也没舍得。',
+    hero: true, shape: 'crown',
+  },
+  yu: {
+    name: '一条鱼', sub: '别问她为什么叫鱼', emoji: '🐟', color: '#5ce1e6', role: '天然呆',
+    desc: 'MC 机械动力工程师。平时话不多，一聊红石就停不下来；做的东西从来不敢给人看。',
+    hero: true, shape: 'fish',
+  },
+  cat: {
+    name: '黄油猫', sub: '黄油猫是我妈妈', emoji: '🐱', color: '#ffd76e', role: '守门猫',
+    desc: '医学系学姐，一条鱼的恋人。段子最多，心最软；谁欺负一条鱼她跟谁急。',
+    hero: true, shape: 'cat',
+  },
+  g: {
+    name: 'G', sub: 'Lriltu · 反骨管理员', emoji: '🅶', color: '#a06bff', role: '矛盾系大佬',
+    desc: '舞萌 / 写谱大佬，管理员。最爱嘴上杠群主，技术优越感和自卑来回横跳。',
+    hero: true, shape: 'star',
+  },
+  shisuan: {
+    name: '石蒜', sub: '信这个不如信我是男娘', emoji: '🧄', color: '#8be08b', role: '孤岛写谱人',
+    desc: '中二、自黑、写谱狂魔。他自己说过：社交渠道几乎全在这个群里了。',
+    hero: true, shape: 'garlic',
+  },
+  tttt: {
+    name: 'Tttt', sub: '起外号专家', emoji: '🎭', color: '#ff9f6e', role: '梗王 · 管理员',
+    desc: '起外号一绝，阴阳怪气但心软。名言：面包是我的。',
+    hero: true, shape: 'mask',
+  },
+  shei: {
+    name: '誰', sub: '又名蛋蛋', emoji: '🥚', color: '#cfcfe8', role: 'meta 攻略宅',
+    desc: '情绪化、AI token 依赖，正在把整个群当成 galgame 攻略，还写了剧本。',
+    hero: true, shape: 'egg',
+  },
+  shiban: {
+    name: '石斑鱼', sub: '🪨🦓🐟 · 猎团', emoji: '🐠', color: '#7fe0c0', role: '卖弱阴阳人',
+    desc: '怪猎党，单曲循环《冷漠群友不请我吃肯德基》。卖弱与阴阳并存。',
+    hero: true, shape: 'fin',
+  },
+  taffy: {
+    name: 'taffy', sub: '看我落地水！', emoji: '🧦', color: '#ffb3d9', role: '落地水',
+    desc: 'MC 里永远的经典：喊一句看我落地水，然后掉进虚空。群里笑了她一个月。',
+    hero: true, shape: 'bucket',
+  },
+  c30586: {
+    name: '30586', sub: '何时mc · 不来我人没了', emoji: '🍗', color: '#ffcf6e', role: '催活动',
+    desc: '每周准时上线催 MC，办了十九次躲猫猫，报名表上永远差三个人。',
+    hero: true, shape: 'moon',
+  },
+  mianbao: {
+    name: '面包', sub: '高冷发图人 · 拍框大王', emoji: '🥖', color: '#f0c98a', role: '拍框大王',
+    desc: '连发二十张图也不配一句话。Tttt 喜欢的那块面包就是他。',
+    hero: true, shape: 'bread',
+  },
+  mibu: {
+    name: '咪猫布', sub: '医学系 · 一百三十斤的大飞猪', emoji: '💊', color: '#7ad0c0', role: '校医院常客',
+    desc: '自封一百三十斤的大飞猪。操心别人穿得够不够，自己的体检单上列了十七种可能。',
+    hero: true, shape: 'pill',
+  },
+  linxi: {
+    name: '凛～～熙', sub: '我是努力b！', emoji: '📈', color: '#9fc8ff', role: '成绩图轰炸机',
+    desc: '一屏十二张成绩图，配文永远是「我还是太菜了」。被捧一次就崩一次。',
+    hero: true, shape: 'chart',
+  },
+  gen: {
+    name: '根哥', sub: 'Unity 实训开发 · 不是爸爸', emoji: '🧑‍🔧', color: '#7fb0ff', role: '领路人',
+    desc: '把你拉进群的人。实训死线前六小时还在群里问作业，只有 aka 回他「不会 下一个」。',
+    hero: true, shape: 'wrench',
+  },
+  aka: {
+    name: 'aka', sub: 'token 情报商 · 降智预警', emoji: '📉', color: '#9ad0ff', role: '渠道运营商',
+    desc: '模型一降智就在群里嚎，手上一把渠道清单——被冲爆过，也被救回来过。',
+    hero: true, shape: 'wave',
+  },
+  moku: {
+    name: '蘑菇汤', sub: '藤原氏', emoji: '🍄', color: '#ff5a78', role: '反派',
+    desc: '群规挑战者，专挑群主和新人下嘴。至今没人当面顶过他。',
+    hero: false, shape: 'mushroom',
+  },
 };
 
-/* 半透明纯色剪影立绘：身体沿用宽版剪影，头部配件沿用 v0.2 的「角色专属小配件」。 */
-const BODY = '<path d="M52 560 C52 432 96 372 150 372 C204 372 248 432 248 560 Z"/>'+
-             '<path d="M134 330 L134 374 C134 386 166 386 166 374 L166 330 Z"/>'+
-             '<circle cx="150" cy="292" r="52"/>';
-
-/* 配件坐标系沿用 v0.2 的 100×100 头部框，整体放大 3 倍后下移 178。 */
-export const ACC: Record<string, string> = {
-  crown:'<path d="M32 17 L40 27 L50 12 L60 27 L68 17 L64 37 L36 37 Z" fill="{C}" opacity="0.92"/>',
-  cat  :'<path d="M31 24 L35 5 L48 18 Z" fill="{C}" opacity="0.92"/><path d="M69 24 L65 5 L52 18 Z" fill="{C}" opacity="0.92"/>',
-  fish :'<path d="M66 74 q14 -8 17 3 q-8 9 -17 4 z" fill="{C}" opacity="0.92"/><circle cx="76" cy="77" r="2.2" fill="#0b0910"/>',
-  star :'<path d="M50 5 l5 12 13 1 -10 9 3 13 -11 -7 -11 7 3 -13 -10 -9 13 -1 z" fill="{C}" opacity="0.92"/>',
-  garlic:'<path d="M50 7 q12 10 9 22 q-9 -6 -18 0 q-3 -12 9 -22 z" fill="{C}" opacity="0.92"/>',
-  mask :'<ellipse cx="50" cy="42" rx="14" ry="9" fill="#0b0910" opacity="0.5"/><ellipse cx="44" cy="41" rx="3.2" ry="3.6" fill="{C}"/><ellipse cx="56" cy="41" rx="3.2" ry="3.6" fill="{C}"/>',
-  egg  :'<ellipse cx="50" cy="27" rx="16" ry="12" fill="{C}" opacity="0.6"/>',
-  fin  :'<path d="M50 6 q14 9 0 22 q-14 -13 0 -22 z" fill="{C}" opacity="0.92"/>',
-  bucket:'<path d="M39 5 h22 v13 h-22 z" fill="{C}" opacity="0.92"/><path d="M44 5 q6 -9 12 0" stroke="{C}" fill="none" stroke-width="3" opacity="0.9"/>',
-  moon :'<path d="M58 5 a12 12 0 1 0 7 22 a10 10 0 1 1 -7 -22 z" fill="{C}" opacity="0.92"/>',
-  bread:'<path d="M29 11 q21 -11 42 0 v11 h-42 z" fill="{C}" opacity="0.92"/>',
-  wrench:'<rect x="42" y="4" width="6" height="19" rx="3" fill="{C}" opacity="0.88"/><rect x="52" y="4" width="6" height="19" rx="3" fill="{C}" opacity="0.88"/>',
-  wave :'<path d="M28 34 q6 -10 12 0 t12 0 t12 0" stroke="{C}" fill="none" stroke-width="3.4" opacity="0.9"/>',
-  mushroom:'<path d="M25 27 q25 -26 50 0 q-25 10 -50 0 z" fill="{C}" opacity="0.92"/>',
-  pill :'<g transform="rotate(-10 50 12)"><rect x="38" y="5" width="24" height="12" rx="6" fill="{C}" opacity="0.9"/><rect x="50" y="5" width="12" height="12" rx="6" fill="#0b0910" opacity="0.4"/></g>',
-  chart:'<rect x="32" y="16" width="6" height="12" rx="2" fill="{C}" opacity="0.85"/><rect x="42" y="9" width="6" height="19" rx="2" fill="{C}" opacity="0.95"/><rect x="52" y="20" width="6" height="8" rx="2" fill="{C}" opacity="0.7"/><rect x="62" y="4" width="6" height="24" rx="2" fill="{C}" opacity="0.95"/>',
-  dot  :'<circle cx="50" cy="16" r="5" fill="{C}" opacity="0.85"/>'
-};
-
-export function silhouette(key: string): string {
-  const ch = CH[key]; if (!ch) return "";
-  const acc = (ACC[ch.h] || ACC.dot).replace(/\{C\}/g, ch.c);
-  return '<svg viewBox="0 0 300 560" xmlns="http://www.w3.org/2000/svg">' +
-    '<g fill="' + ch.c + '" fill-opacity="0.8">' + BODY + '</g>' +
-    '<g transform="translate(0,178) scale(3)">' + acc + '</g></svg>';
-}
+/** 计入好感度的角色（顺序即界面显示顺序，也就是结局评选的平票优先序）。 */
+export const HERO_KEYS: readonly CharKey[] = [
+  'nanao', 'yu', 'cat', 'g', 'shisuan', 'tttt', 'shei',
+  'shiban', 'taffy', 'c30586', 'mianbao', 'mibu', 'linxi', 'gen', 'aka',
+];

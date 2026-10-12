@@ -1,211 +1,442 @@
-import type { GameState, StatKey } from './engine/types';
-import { NODES } from './content/script';
-import { freshState, loadSave, save } from './engine/state';
-import { Game } from './engine/runner';
-import { DomRenderer } from './ui/renderer';
-import { AU } from './ui/audio';
-import { $, showScreen, screenOn, toast } from './ui/dom';
-import { openGallery, openDrawer, closeDrawer, drawerOpen } from './ui/panels';
-import { SPEEDS } from './ui/stage';
-import './style.css';
+// 样式按块拆分的引入顺序会影响层叠，保持与源文件中的先后一致
+import './styles/tokens.css';
+import './styles/title.css';
+import './styles/chat.css';
+import './styles/chrome.css';
 
-const STATS: readonly StatKey[] = ['z', 'r', 'm', 'q', 'w'];
+import { mountShell } from './ui/shell';
+import { createChatView } from './ui/chat';
+import { createComposer } from './ui/composer';
+import { createOverlay } from './ui/overlay';
+import { createToasts } from './ui/toasts';
+import { createRenderer } from './ui/renderer';
+import { renderMembers } from './ui/drawer';
+import { renderBacklog } from './ui/backlog';
+import { renderSaves } from './ui/saves';
+import { renderGallery } from './ui/gallery';
+import { delaysForSpeed, renderSettings } from './ui/settings';
+import { renderRouteMap } from './ui/route-map';
+import {
+  AUTOSAVE_ID, SAVE_SLOTS, deleteSlot, listSlots, readSettings, readSlot,
+  writeSettings, writeSlot, type SaveSlotId, type SettingsData,
+} from './ui/storage';
+import { CHARS, HERO_KEYS, LABELS, SCRIPT } from './content';
+import { BEDATA } from './content/endings';
+import { sil } from './ui/silhouettes';
+import { STAT_KEYS, applyRepeat, createInitialProgress, createInitialState, unlockEnding } from './engine/effects';
+import { buildRouteMap, fromCheckpoint, recordArrival } from './engine/route-map';
+import { run } from './engine/runner';
+import { BGM } from './audio/bgm';
+import type { DelayPolicy, FlatNode, LogEntry, Session } from './engine/types';
 
-const renderer = new DomRenderer({ rollback, gallery, title: toTitle });
-const game = new Game(loadSave() ?? freshState(), renderer);
+const root = document.getElementById('app');
+if (!root) throw new Error('缺少挂载点 #app');
 
-/* ---------------- 画面切换 ---------------- */
+const shell = mountShell(root);
 
-function toGame(): void {
-  showScreen('s-game');
-  STATS.forEach(k => {
-    const el = document.getElementById('st-' + k);
-    if (el) el.textContent = String(game.state.s[k] || 0);
-  });
-  renderer.refreshPrefBtns();
+/**
+ * 桌面端会话列表里的「最后一条消息」预览。
+ * 直接取聊天流的最后一条（自己的消息也算，QQ 也是这么显示的）；
+ * 一条都没有时给个中性占位，不编造文案。
+ */
+function syncPreview(): void {
+  const items = shell.chat.querySelectorAll('.msg .bub, .sys span');
+  const last = items[items.length - 1];
+  shell.convPrev.textContent = (last?.textContent ?? '').trim() || '还没有消息';
 }
 
-function toTitle(): void {
-  showScreen('s-title');
-  AU.setTrack('title');
-  const s = loadSave();
-  $<HTMLButtonElement>('btn-continue').disabled = !(s && s.id);
-}
+const chat = createChatView(shell.chat, shell.stageSil, CHARS, syncPreview);
+const composer = createComposer(shell.composer);
+const overlay = createOverlay(shell.overlay, shell.ovCard, CHARS);
+const toasts = createToasts(shell.toasts);
 
-function gallery(): void {
-  openGallery(game.state);
-}
+let settings: SettingsData = readSettings();
 
-/** 回滚到分岔之夜：恢复快照，回收记录 / 设置 / 水群值不回滚。 */
-function loadCP(): GameState {
-  const cur = game.state;
-  if (!cur.cp) return cur;
-  const got = (cur.unlocked || []).slice();
-  const seSet = cur.se, bgmSet = cur.bgm, wNow = (cur.s && cur.s.w) || 0;
-  const restored = JSON.parse(cur.cp) as GameState;
-  restored.cp = null;
-  restored.unlocked = Array.from(new Set(got.concat(restored.unlocked || [])));
-  restored.se = seSet; restored.bgm = bgmSet;
-  restored.s.w = Math.max(restored.s.w || 0, wNow);
-  save(restored);
-  return restored;
-}
+/**
+ * 可变对象，直接交给 Renderer 持有：runner 每次等待前都读一次 `fast`，
+ * 所以快进能即时生效。**文字速度**来自设置（持久化），
+ * **快进**是临时开关、每局重置——两者不可混淆。
+ *
+ * `wait` 是**可被打断的等待**：玩家点击 / 空格即可立刻结束当前这一句的等待，
+ * 也就是「推进」。引擎只调用它，不碰 DOM。
+ */
+let cutWait: (() => void) | null = null;
 
-function rollback(): void {
-  game.swap(loadCP());
-  toGame();
-  void game.play('e4');
-}
-
-/* ---------------- 开局 / 读档 ---------------- */
-
-function startGame(): void {
-  const keep = { se: game.state.se, bgm: game.state.bgm };
-  const ns = freshState();
-  ns.se = keep.se; ns.bgm = keep.bgm;
-  save(ns);
-  game.swap(ns);
-  toGame();
-  AU.on = ns.bgm; AU.se = ns.se;
-  AU.setTrack('daily');
-  if (ns.bgm) AU.start();
-  void game.play('start');
-}
-
-function continueGame(): void {
-  toGame();
-  AU.setTrack(NODES[game.state.id]?.bgm || 'daily');
-  AU.start();
-  void game.play(game.state.id);
-}
-
-/* ---------------- 按钮绑定 ---------------- */
-
-$('btn-start').onclick = () => { AU.on = game.state.bgm !== false; AU.start(); startGame(); };
-
-$('btn-continue').onclick = () => {
-  const s = loadSave();
-  if (!s) return;
-  game.swap(s);
-  AU.start();
-  continueGame();
+const delays: DelayPolicy = {
+  ...delaysForSpeed(settings.speed),
+  fast: false,
+  wait(ms) {
+    return new Promise<void>(resolve => {
+      const timer = setTimeout(() => { cutWait = null; resolve(); }, ms);
+      cutWait = () => { clearTimeout(timer); cutWait = null; resolve(); };
+    });
+  },
 };
 
-$('btn-gallery1').onclick = () => { gallery(); };
-$('btn-galback').onclick = () => { toTitle(); };
-$('btn-about').onclick = () => { $('modal-about').classList.add('on'); };
-$('about-close').onclick = () => { $('modal-about').classList.remove('on'); };
-$('btn-home').onclick = () => { if (confirm('返回标题？当前进度已自动保存。')) toTitle(); };
+/** 点击 / 空格推进：结束当前等待，让下一句立刻上屏。 */
+function advance(): void { cutWait?.(); }
 
-$('btn-members').onclick = () => { openDrawer(game.state); };
-$('btn-drawer-close').onclick = () => { closeDrawer(); };
+const renderer = createRenderer({
+  chat, composer, overlay, toasts, delays,
+  topbar: {
+    setChapter: title => { shell.mChapter.textContent = title; },
+  },
+});
 
-$('btn-auto').onclick = () => { renderer.toggleAuto(); };
-$('btn-speed').onclick = () => {
-  renderer.cycleSpeed();
-  toast('文字速度：' + SPEEDS[renderer.pref.spd]!.n);
+/** 当前局的代号。读档时自增，用来作废仍在跑的那个 run。 */
+let runToken = 0;
+let running = false;
+
+/** 路线图只依赖静态剧本，构建一次即可。 */
+const routeMap = buildRouteMap(SCRIPT, LABELS);
+
+/** 就地替换 session 的内容——**不能重新赋值**，run() 持有的是同一个对象引用。 */
+let session: Session = {
+  state: createInitialState(), ip: 0, history: [], progress: createInitialProgress(),
 };
 
-$('btn-sound').onclick = () => {
-  const s = game.state;
-  s.se = !s.se; save(s); AU.se = s.se;
-  $('btn-sound').textContent = s.se ? '🔊' : '🔇';
-  toast('音效：' + (s.se ? '开' : '关'));
-  if (s.se) AU.sfx('click');
-};
+function updateTop(): void {
+  shell.mCount.textContent = String(session.state.members);
+  shell.mWater.textContent = String(session.state.water);
+  for (const k of STAT_KEYS) {
+    shell.stats[k]!.textContent = String(session.state.stats[k] ?? 0);
+  }
+}
 
-$('btn-music').onclick = () => { $('modal-music').classList.add('on'); };
+/** 把历史重放进聊天流（读档后恢复现场）。 */
+function replayHistory(history: readonly LogEntry[]): void {
+  chat.clear();
+  for (const e of history) {
+    if (e.kind === 'say') chat.say(e.who, e.text);
+    else if (e.kind === 'sys') chat.sys(e.text);
+    else chat.note(e.text);
+  }
+}
 
-$('m-bgm').onclick = () => {
-  const s = game.state;
-  s.bgm = !s.bgm; save(s);
-  $('m-bgm').textContent = s.bgm ? '开' : '关';
-  AU.on = s.bgm;
-  if (s.bgm) { AU.stopFile(); AU.start(); } else { AU.stop(); AU.pause(); }
-};
+/** 当前局停在的那个选择节点的下标；不在选择点时是 null。 */
+let pendingChoiceIp: number | null = null;
 
-$('m-se').onclick = () => {
-  const s = game.state;
-  s.se = !s.se; save(s);
-  $('m-se').textContent = s.se ? '开' : '关';
-  AU.se = s.se; AU.sfx('click');
-};
-
-document.querySelectorAll<HTMLElement>('[data-trk]').forEach(b => {
-  b.onclick = () => {
-    AU.stopFile();
-    const s = game.state;
-    s.trk = b.dataset.trk || 'title'; save(s);
-    AU.on = s.bgm; AU.setTrack(s.trk);
-    toast('BGM：' + b.textContent);
+/**
+ * 存档快照。
+ *
+ * ⚠️ 不能直接用 `session.ip`：runner 在调用 `askChoice` **之前**就已经把 ip 推进过了，
+ * 所以玩家停在选择点时 `session.ip` 指向的是**选择之后**的节点，直接存会导致
+ * 读档跳过那个选择（Review Focus #2）。这里把指针拨回选择本身。
+ */
+function snapshotSession(): Session {
+  return {
+    state: session.state,
+    ip: pendingChoiceIp ?? session.ip,
+    history: session.history,
+    progress: session.progress,
   };
-});
+}
 
-$('m-file').onclick = () => { $<HTMLInputElement>('file-input').click(); };
-$<HTMLInputElement>('file-input').onchange = e => {
-  const f = (e.target as HTMLInputElement).files?.[0];
-  if (!f) return;
-  AU.playFile(f);
-  toast('正在播放本地音乐：' + f.name);
-};
+async function startRun(): Promise<void> {
+  const token = ++runToken;
+  running = true;
+  try {
+    await run(session, {
+      script: SCRIPT, labels: LABELS, chars: CHARS, beData: BEDATA,
+      onNode: (ip, node: FlatNode) => {
+        // 抵达任意 label 记进度；choice / hub / loop / branch 还会在首次抵达时存状态快照
+        if (node.kind === 'label') {
+          recordArrival(session.progress, routeMap, node.name, session.state, session.history.length);
+        }
+        if (node.kind === 'choice' || node.kind === 'hub'
+          || node.kind === 'loop' || node.kind === 'branch') {
+          pendingChoiceIp = ip;
+          updateTop();
+          writeSlot(AUTOSAVE_ID, snapshotSession());
+        } else {
+          pendingChoiceIp = null;
+        }
+      },
+      shouldStop: () => token !== runToken,
+    }, renderer);
+  } finally {
+    if (token === runToken) running = false;
+    // 结局解锁发生在 run 内部，跑完再落一次盘，否则「回到标题 → 回收室」会丢进度
+    updateTop();
+    writeSlot(AUTOSAVE_ID, snapshotSession());
+  }
+}
 
-document.querySelectorAll('.modal').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('on'); });
-});
+function syncBgmButton(): void {
+  shell.btnBgm.textContent = BGM.isOn() ? '🔊' : '🔇';
+  shell.btnBgmTitle.textContent = '🔊 音乐：' + (BGM.isOn() ? '开' : '关');
+}
 
-/* ---------------- 复读 & 水群值（同一句刷三次触发刷屏 BE） ---------------- */
+function applySettings(next: SettingsData): void {
+  settings = next;
+  writeSettings(next);
+  Object.assign(delays, delaysForSpeed(next.speed)); // 只覆盖计时，不动 fast
+  BGM.setOn(next.bgm);
+  syncBgmButton();
+}
 
-let repLine = '', repN = 0;
-$('btn-repeat').onclick = () => {
-  if (document.getElementById('endcard')) return;
-  const node = NODES[game.state.id];
-  if (!node || node.m !== 'chat' || !renderer.lastChatLine) { toast('现在没有可以复读的群消息'); return; }
-  AU.sfx('click');
-  renderer.pushSelfBubble(renderer.lastChatLine);
-  if (renderer.lastChatLine === repLine) repN++;
-  else { repLine = renderer.lastChatLine; repN = 1; }
-  const s = game.state;
-  s.s.w = (s.s.w || 0) + 1;
-  renderer.statChanged('w', s.s.w);
-  save(s);
-  if (repN >= 3) { void game.play('__end_b24'); return; }
-  toast(repN === 2 ? '再复读一次，就要被禁言了' : '复读成功 · 水群值 +1');
-};
+async function startGame(): Promise<void> {
+  setMenu(false);
+  shell.title.classList.add('hidden');
+  shell.game.classList.remove('hidden');
 
-/* ---------------- 输入推进：手动点击 / 空格 ---------------- */
+  runToken++;                                   // 作废上一局
+  pendingChoiceIp = null;
+  session.state = createInitialState();
+  session.ip = 0;
+  session.history = [];
+  session.progress = createInitialProgress();
+  chat.clear();
+  composer.idle();
+  updateTop();
+  renderMembers(shell.drList, CHARS, session.state);
 
+  // 快进回到默认关闭：新开一局不继承上一局的加速状态
+  delays.fast = false;
+  shell.btnFast.textContent = '快进';
+
+  Object.assign(delays, delaysForSpeed(settings.speed));
+  BGM.setOn(settings.bgm);
+  BGM.set('chat');
+  BGM.start('chat');
+
+  await startRun();
+}
+
+function backToTitle(): void {
+  overlay.close();
+  closePanel();
+  setMenu(false);
+  shell.game.classList.add('hidden');
+  shell.title.classList.remove('hidden');
+  shell.stageSil.innerHTML = '';
+  runToken++;                                   // 作废仍在跑的 run
+  running = false;
+}
+
+/** 读档：就地替换内容、重放历史、从存档点续跑。 */
+function loadSession(loaded: Session): void {
+  runToken++;                                   // 先作废当前 run
+  pendingChoiceIp = null;
+
+  session.state = loaded.state;
+  session.ip = loaded.ip;
+  session.history = loaded.history;
+  session.progress = loaded.progress;
+
+  replayHistory(loaded.history);
+  updateTop();
+  renderMembers(shell.drList, CHARS, session.state);
+  closePanel();
+
+  shell.title.classList.add('hidden');
+  shell.game.classList.remove('hidden');
+
+  BGM.set('chat');
+  void startRun();
+}
+
+/**
+ * 跳到某个已达的关键节点。语义与读档一致——**就地**替换 session 内容：
+ * 恢复该节点首次抵达时的状态快照、指针拨回该 label、把历史截断回那一刻、
+ * 重放现场、从该 label 重新起跑。
+ *
+ * ⚠️ `run()` 持有同一个 session 对象引用，只能改字段、不能整个重新赋值。
+ */
+function jumpTo(label: string): void {
+  const node = routeMap.nodes[label];
+  const checkpoint = session.progress.checkpoints[label];
+  if (!node || !checkpoint) { toasts.toast('这个节点还没走到，跳不了'); return; }
+
+  runToken++;                                   // 作废当前 run
+  pendingChoiceIp = null;
+  composer.idle();                              // 清掉可能还挂着的旧选项按钮
+
+  session.state = fromCheckpoint(checkpoint);
+  session.ip = LABELS[label] ?? 0;
+  session.history = session.history.slice(0, session.progress.historyLens[label] ?? 0);
+
+  replayHistory(session.history);
+  updateTop();
+  renderMembers(shell.drList, CHARS, session.state);
+  closePanel();
+
+  shell.title.classList.add('hidden');
+  shell.game.classList.remove('hidden');
+
+  BGM.set('chat');
+  void startRun();
+  toasts.toast(`已跳转到「${node.title}」`);
+}
+
+/* ---------- 面板（回想 / 存档 / 设置 / 路线共用） ---------- */
+
+function openPanel(title: string, draw: (body: HTMLElement) => void, wide = false): void {
+  shell.panel.classList.toggle('wide', wide);
+  shell.panelTitle.textContent = title;
+  shell.panelBody.innerHTML = '';
+  shell.panel.classList.add('open');
+  draw(shell.panelBody);
+}
+
+function closePanel(): void {
+  shell.panel.classList.remove('open');
+}
+
+/* ---------- 顶栏的 ⋯ 群工具菜单 ---------- */
+
+function setMenu(open: boolean): void {
+  shell.tbMenu.classList.toggle('hidden', !open);
+  shell.btnMenu.setAttribute('aria-expanded', String(open));
+}
+
+const menuOpen = (): boolean => !shell.tbMenu.classList.contains('hidden');
+
+function openSavesPanel(): void {
+  openPanel('存档', body => renderSaves(body, listSlots(), {
+    onSave: id => { writeSlot(id, snapshotSession()); openSavesPanel(); },
+    onLoad: id => {
+      const loaded = readSlot(id);
+      if (loaded) loadSession(loaded);
+      else toasts.toast('这个存档读不出来');
+    },
+    onDelete: id => { deleteSlot(id); openSavesPanel(); },
+  }));
+}
+
+function openSettingsPanel(): void {
+  openPanel('设置', body => renderSettings(body, settings, {
+    onChange: next => { applySettings(next); openSettingsPanel(); },
+    onClearSaves: () => {
+      const all: readonly SaveSlotId[] = [AUTOSAVE_ID, ...SAVE_SLOTS];
+      for (const id of all) deleteSlot(id);
+      toasts.toast('已清除全部存档');
+      openSettingsPanel();
+    },
+  }));
+}
+
+function openRoutePanel(): void {
+  openPanel('路线', body =>
+    renderRouteMap(body, routeMap, session.progress, { onJump: jumpTo }), true);
+}
+
+function openGalleryPanel(): void {
+  openPanel('结局回收室', body => renderGallery(body, session.state), true);
+}
+
+/* ---------- 接线 ---------- */
+
+overlay.onRestart = () => { void startGame(); };
+overlay.onBackToTitle = backToTitle;
+
+shell.btnStart.onclick = () => { BGM.start('chat'); void startGame(); };
+shell.btnAbout.onclick = () => overlay.showAbout(() => { void startGame(); });
+
+shell.btnBgmTitle.onclick = () => { applySettings({ ...settings, bgm: BGM.toggle() }); };
+shell.btnBgm.onclick = () => { applySettings({ ...settings, bgm: BGM.toggle() }); };
+
+/* ---- ⋯ 菜单：展开 / 收起 ---- */
+shell.btnMenu.onclick = () => setMenu(!menuOpen());
+shell.tbMenu.addEventListener('click', () => setMenu(false));     // 点了任一项就收起
 document.addEventListener('click', e => {
-  AU.init();
-  const t = e.target as HTMLElement;
-  if (t.closest('button')) return;
-  if (drawerOpen()) {
-    if (!t.closest('.drawer')) closeDrawer();
+  const t = e.target as HTMLElement | null;
+  if (t && (t.closest('#tbMenu') || t.closest('#btnMenu'))) return;
+  setMenu(false);                                                  // 点别处收起
+});
+
+/* ---- 返回箭头：回到标题页 ---- */
+shell.btnBack.onclick = backToTitle;
+
+shell.btnMembers.onclick = () => {
+  renderMembers(shell.drList, CHARS, session.state);
+  shell.drawer.classList.add('open');
+};
+shell.btnCloseDr.onclick = () => shell.drawer.classList.remove('open');
+
+shell.btnBacklog.onclick = () => {
+  openPanel('回想', body => renderBacklog(body, session.history, CHARS));
+};
+shell.btnSaves.onclick = openSavesPanel;
+shell.btnSettings.onclick = openSettingsPanel;
+shell.btnRoute.onclick = openRoutePanel;
+shell.btnGallery.onclick = openGalleryPanel;
+shell.btnPanelClose.onclick = closePanel;
+
+// 标题页的回收室：直接读自动存档里的收集进度（没有存档就看空进度），
+// 面板本身独立于 #game，因此停在标题页也能打开。
+shell.btnGalleryTitle.onclick = () => {
+  const saved = readSlot(AUTOSAVE_ID);
+  openPanel('结局回收室', body => renderGallery(body, saved?.state ?? session.state), true);
+};
+
+shell.btnFast.onclick = () => {
+  delays.fast = !delays.fast;
+  shell.btnFast.textContent = delays.fast ? '快进:开' : '快进';
+  toasts.toast(delays.fast ? '已开启快进' : '已关闭快进');
+};
+
+/**
+ * 复读。逻辑全在 applyRepeat（就地推进 session，可测试），
+ * 这里只负责展示与 BE24 分支。
+ *
+ * ⚠️ 不要写成 `session = result.session`——run() 持有的是同一个对象引用。
+ */
+shell.btnRepeat.onclick = () => {
+  if (!running) { toasts.toast('还没有可以复读的消息'); return; }
+
+  const result = applyRepeat(session);
+  if (result.outcome === 'empty' || result.spoken === undefined) {
+    toasts.toast('还没有可以复读的消息');
     return;
   }
-  if (screenOn('s-game') && !t.closest('.endcard')) renderer.advance();
-});
+
+  chat.say('me', result.spoken);
+  updateTop();
+
+  if (result.outcome === 'banned') {
+    BGM.set('tension');
+    session.state = unlockEnding(session.state, 'b24');
+    writeSlot(AUTOSAVE_ID, snapshotSession());
+    overlay.showBE('b24');
+    return;
+  }
+  if (result.outcome === 'warn') toasts.toast('再复读一次 要被禁言了');
+  else toasts.toast('复读成功  +1 水群值');
+};
 
 document.addEventListener('keydown', e => {
-  if (e.code === 'Escape') {
-    closeDrawer();
-    document.querySelectorAll('.modal.on').forEach(m => m.classList.remove('on'));
+  if (e.key === 'Escape') {
+    shell.drawer.classList.remove('open');
+    closePanel();
+    overlay.close();
+    setMenu(false);
+    return;
   }
-  if (!screenOn('s-game')) return;
-  if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); renderer.advance(); }
-  else if (e.code === 'KeyA') { renderer.toggleAuto(); toast(renderer.pref.auto ? '自动播放：开' : '自动播放：关'); }
-  else if (e.code === 'KeyS') { renderer.cycleSpeed(); toast('文字速度：' + SPEEDS[renderer.pref.spd]!.n); }
+  // 空格 / 回车推进（弹窗与面板打开时不抢键）
+  if (e.code === 'Space' || e.code === 'Enter') {
+    if (overlay.isOpen() || shell.panel.classList.contains('open')) return;
+    e.preventDefault();
+    advance();
+  }
 });
 
-/* ---------------- 启动 ---------------- */
+/**
+ * 点击推进：点在消息流或空白处都算，点在按钮上不算
+ * （选项、群工具、弹窗按钮都有自己的职责，不能被当成推进）。
+ */
+document.addEventListener('click', e => {
+  const t = e.target as HTMLElement | null;
+  if (t?.closest('button')) return;
+  if (overlay.isOpen() || shell.panel.classList.contains('open')) return;
+  if (shell.game.classList.contains('hidden')) return;
+  advance();
+});
 
-(function init(): void {
-  const s = game.state;
-  AU.on = s.bgm !== false; AU.se = s.se !== false; AU.trk = s.trk || 'title';
-  const saved = loadSave();
-  $<HTMLButtonElement>('btn-continue').disabled = !(saved && saved.id);
-  $('m-bgm').textContent = s.bgm === false ? '关' : '开';
-  $('m-se').textContent = s.se === false ? '关' : '开';
-  $('btn-sound').textContent = s.se === false ? '🔇' : '🔊';
-  renderer.refreshPrefBtns();
-  document.addEventListener('pointerdown', () => AU.init(), { once: true });
-})();
+/* 标题页底部的角色剪影合影（纯装饰，点不到）。 */
+shell.tCast.innerHTML = HERO_KEYS
+  .map(k => `<span>${sil(k, 340, CHARS)}</span>`)
+  .join('');
+
+syncBgmButton();
+renderMembers(shell.drList, CHARS, session.state);

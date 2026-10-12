@@ -29,7 +29,11 @@ export interface Shell {
   readonly convPrev: HTMLElement;
   readonly mCount: HTMLElement;
   readonly mWater: HTMLElement;
+  readonly mChapter: HTMLElement;
+  readonly stats: Record<string, HTMLElement>;
   readonly btnStart: HTMLButtonElement;
+  readonly btnGalleryTitle: HTMLButtonElement;
+  readonly btnGallery: HTMLButtonElement;
   readonly btnAbout: HTMLButtonElement;
   readonly btnBgmTitle: HTMLButtonElement;
   readonly btnBack: HTMLButtonElement;
@@ -56,6 +60,7 @@ const SHELL_HTML = `
     </div>
     <nav class="t-btns">
       <button id="btnStart" class="btn primary">开始游戏</button>
+      <button id="btnGalleryTitle" class="btn">🕳 结局回收室</button>
       <button id="btnBgmTitle" class="btn">🔊 音乐：开</button>
       <button id="btnAbout" class="btn">关于 / 素材</button>
     </nav>
@@ -86,8 +91,15 @@ const SHELL_HTML = `
         <header class="topbar">
           <button id="btnBack" class="tb-back" aria-label="返回">‹</button>
           <div class="tb-title">
-            <div class="tb-name">😂群聊</div>
+            <div class="tb-name" id="mChapter">😂群聊</div>
             <div class="tb-meta">成员 <b id="mCount">81</b> · 水群值 <b id="mWater">0</b></div>
+          </div>
+          <div class="tb-stats" aria-label="资质">
+            <span class="st"><i>真诚</i><b id="st-z">0</b></span>
+            <span class="st"><i>嘴臭</i><b id="st-r">0</b></span>
+            <span class="st"><i>卖弱</i><b id="st-m">0</b></span>
+            <span class="st"><i>空気</i><b id="st-q">0</b></span>
+            <span class="st"><i>水群</i><b id="st-w">0</b></span>
           </div>
           <button id="btnMenu" class="tb-more" aria-label="群工具" aria-haspopup="menu" aria-expanded="false" aria-controls="tbMenu">⋯</button>
         </header>
@@ -97,6 +109,7 @@ const SHELL_HTML = `
           <button id="btnSaves" class="mini mi" role="menuitem" data-ic="💾">存档</button>
           <button id="btnSettings" class="mini mi" role="menuitem" data-ic="⚙">设置</button>
           <button id="btnRoute" class="mini mi" role="menuitem" data-ic="🗺">路线</button>
+          <button id="btnGallery" class="mini mi" role="menuitem" data-ic="🕳">结局回收室</button>
           <button id="btnRepeat" class="mini mi" role="menuitem" data-ic="🔁">复读</button>
           <button id="btnFast" class="mini mi" role="menuitem" data-ic="⏩">快进</button>
           <button id="btnBgm" class="mini mi" role="menuitem">🔊</button>
@@ -140,8 +153,13 @@ export function mountShell(root: HTMLElement): Shell {
     ovCard: need('ovCard'), toasts: need('toasts'), stageSil: need('stageSil'),
     panel: need('panel'), panelTitle: need('panelTitle'), panelBody: need('panelBody'),
     tbMenu: need('tbMenu'), tCast: need('tCast'), convPrev: need('convPrev'),
-    mCount: need('mCount'), mWater: need('mWater'),
+    mCount: need('mCount'), mWater: need('mWater'), mChapter: need('mChapter'),
+    stats: {
+      z: need('st-z'), r: need('st-r'), m: need('st-m'), q: need('st-q'), w: need('st-w'),
+    },
     btnStart: need<HTMLButtonElement>('btnStart'),
+    btnGalleryTitle: need<HTMLButtonElement>('btnGalleryTitle'),
+    btnGallery: need<HTMLButtonElement>('btnGallery'),
     btnAbout: need<HTMLButtonElement>('btnAbout'),
     btnBgmTitle: need<HTMLButtonElement>('btnBgmTitle'),
     btnBack: need<HTMLButtonElement>('btnBack'),

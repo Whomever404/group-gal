@@ -8,6 +8,8 @@
   pointer-events:none;z-index:3;transition:opacity .5s;
 }
 #stageSil svg{width:100%;height:auto}
+/* avg 场景立绘：抬高存在感（夜景独白、深夜私聊用） */
+#stageSil.stage-on{opacity:.2}
 
 /* ---------- 抽屉：群成员（QQ）与 VN 面板共用容器 ---------- */
 .drawer{
@@ -108,6 +110,26 @@
 /* 路线图的分列流程图比较宽，给它一个加宽变体，并留出足够画布高度 */
 .vn-panel.wide .vn-win{width:min(1120px,96vw)}
 .vn-panel.wide .dr-list{min-height:min(68vh,560px)}
+
+/* ---------- 结局回收室 ---------- */
+.gal-head{
+  font-family:var(--font-serif);font-size:16px;letter-spacing:.06em;
+  color:var(--vn-ink);padding-bottom:var(--sp-3);margin-bottom:var(--sp-3);
+  border-bottom:1px solid var(--vn-line);
+}
+.gal-head b{font-family:var(--font-num);color:var(--vn-accent)}
+.gal-sec{
+  font-size:11px;letter-spacing:.28em;color:var(--vn-dim);
+  margin:var(--sp-4) 0 var(--sp-2);
+}
+.bl-row{
+  display:flex;flex-direction:column;gap:3px;
+  padding:11px 0;border-bottom:1px solid rgba(236,231,221,.06);
+}
+.bl-row .bl-t{font-size:14.5px;font-weight:600;color:var(--vn-ink)}
+.bl-row .bl-d{font-size:12.5px;color:var(--vn-dim);line-height:1.5}
+.bl-row.locked .bl-t{color:#5d5a66;font-weight:400;letter-spacing:.1em}
+.bl-row.locked .bl-d{color:#3f3d47}
 
 /* ---------- 存档槽卡片 ---------- */
 .save-row{

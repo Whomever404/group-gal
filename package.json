@@ -1,14 +1,16 @@
 {
   "name": "group-gal",
   "private": true,
-  "version": "0.1.0-alpha",
+  "version": "0.3.0-alpha",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "npm run check:script && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "check:script": "tsx src/engine/validate.cli.ts",
-    "smoke": "tsx tools/smoke-loop.ts"
+    "smoke": "tsx tools/smoke.ts",
+    "check:build": "node tools/boot-check.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

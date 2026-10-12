@@ -1,7 +1,8 @@
 import type { BeId, CharKey, CharTable, EndingResolution, Session } from '../engine/types';
-import { BEDATA, ENDING } from '../content/endings';
+import { BEDATA } from '../content/endings';
+import { ROUTE_ENDINGS } from '../content';
 import { HERO_KEYS } from '../content/characters';
-import { stageOf } from '../engine/effects';
+import { STAT_NAME, STAT_KEYS, stageOf } from '../engine/effects';
 import { esc } from './chat';
 
 /**
@@ -43,7 +44,7 @@ export function createOverlay(
 
   function beHtml(id: BeId): string {
     const b = BEDATA[id];
-    return `<div class="tag">${esc(b.tag)}</div><h2>${esc(b.title)}</h2>
+    return `<div class="tag">${esc(b.tag)} · ${esc(b.who)}</div><h2>${esc(b.title)}</h2>
       <div class="ov-body">${paras(b.text)}</div>${restartBtns()}`;
   }
 
@@ -57,29 +58,36 @@ export function createOverlay(
 
   /** 结局已由引擎判定，这里只渲染。 */
   function routeHtml(key: CharKey, session: Session): string {
-    const e = ENDING[key] ?? ENDING.nanao!;
+    const e = ROUTE_ENDINGS[key];
+    const ch = chars[key];
     const sum = HERO_KEYS
       .map(k => `${esc(chars[k].name)}：<b>${stageOf(session.state.aff[k] ?? 0)}</b>`)
       .join('　');
+    const stats = STAT_KEYS
+      .map(k => `${STAT_NAME[k]} <b>${num(session.state.stats[k] ?? 0)}</b>`)
+      .join('　');
 
-    return `<div class="tag">END · 路线序章</div><h2>${esc(e.title)}</h2>
+    return `<div class="tag">GOOD END · ${esc(ch.emoji)} ${esc(ch.name)}</div><h2>${esc(e.title)}</h2>
       <div class="ov-body">${paras(e.text)}</div>
       <div class="stat-sum">当前沦陷度<br>${sum}<br><br>
-      <span style="color:var(--vn-dim)">水群值：<b>${num(session.state.water)}</b> ｜ 群成员：<b>${num(session.state.members)}</b></span></div>
-      ${restartBtns()}
-      <p class="ov-note">※ 本条为路线序章，个人线好结局按企划要求暂未撰写。游戏内可触发 9 个 Bad End。</p>`;
+      <span style="color:var(--vn-dim)">资质：${stats}<br>
+      水群值：<b>${num(session.state.water)}</b> ｜ 群成员：<b>${num(session.state.members)}</b> ｜ 回合：<b>${num(session.state.turn)}</b></span></div>
+      ${restartBtns()}`;
   }
 
   function aboutHtml(): string {
     return `<div class="tag">ABOUT</div><h2>关于 &amp; 素材</h2>
       <div class="ov-body">
-      <p>《😂群聊 · 全群攻陷计划》单文件可玩 Demo，无需服务器、无需联网。</p>
+      <p>《😂群聊 · 全群攻陷计划》：单文件可玩、无需服务器、无需联网。</p>
+      <p><b style="color:var(--vn-accent)">剧本</b>：15 条角色线 + 23 个坏结局，全部按群聊记录重写；
+      夜间运营里先锁定一名攻略对象，之后每晚只走 TA 的本命支线与随机事件。</p>
       <p><b style="color:var(--vn-accent)">立绘</b>：CSS / SVG 现场绘制的半透明纯色剪影，不含外部图片。</p>
       <p><b style="color:var(--vn-accent)">BGM</b>：内置 Web Audio 实时合成，免版权、离线可播。若替换为真实开源曲目，可参考下列来源并保留署名：</p>
       <p>· <a href="https://dova-s.jp/en/" target="_blank">DOVA-SYNDROME</a> 免费 BGM，可商用、无需署名<br>
         · <a href="https://opengameart.org/content/yoiyami-core-theme-%E2%80%93-deep-blue-ambient-piano" target="_blank">OpenGameArt · Yoiyami Core Theme（CC0）</a><br>
         · <a href="https://potat0master.itch.io/free-background-music-for-visual-novels-bgm-pack-1" target="_blank">Potat0Master · Free VN BGM Pack</a></p>
-      <p style="color:var(--vn-dim);font-size:12.5px">玩法提示：顶部「复读」可涨水群值，但同一句话连续刷屏 3 次会被禁言。</p>
+      <p style="color:var(--vn-dim);font-size:12.5px">玩法提示：顶部「复读」可涨水群值，但同一句话连续刷屏 3 次会被禁言；
+      空気攒到 3 以上，散场之夜就没人记得你。</p>
       </div>
       <div class="btns"><button class="btn primary" id="ovClose">开始游戏</button>
       <button class="btn" id="ovClose2">返回</button></div>`;

@@ -90,6 +90,24 @@
   display:flex;gap:2px;align-items:baseline;white-space:nowrap;
 }
 .tb-meta b{font-family:var(--font-num);font-variant-numeric:tabular-nums;color:var(--qq-dim);font-weight:600}
+
+/* 资质徽标：真诚 / 嘴臭 / 卖弱 / 空気 / 水群。窄屏只留「空気」——它决定结局判定。 */
+.tb-stats{display:flex;gap:6px;align-items:center;flex:0 0 auto}
+.tb-stats .st{
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  min-width:30px;
+}
+.tb-stats .st i{
+  font-style:normal;font-size:9px;letter-spacing:.04em;color:var(--qq-dim);opacity:.75;
+}
+.tb-stats .st b{
+  font-family:var(--font-num);font-variant-numeric:tabular-nums;
+  font-size:13px;font-weight:700;color:var(--qq-txt);line-height:1.1;
+}
+.tb-stats .st:last-child b{color:var(--qq-mention)}
+@media (max-width:640px){
+  .tb-stats .st:not(:nth-child(4)){display:none}
+}
 .tb-more{
   flex:0 0 auto;width:44px;height:44px;
   display:grid;place-items:center;

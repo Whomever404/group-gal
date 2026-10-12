@@ -41,6 +41,13 @@ export function sil(key: CharKey, size: number, chars: CharTable): string {
     acc = `<path d="M26 26 q24 -24 48 0 q-24 9 -48 0 z" fill="${c}" opacity="0.9"/>`;
   } else if (sh === 'wave') {
     acc = `<path d="M30 34 q6 -9 12 0 t12 0 t12 0" stroke="${c}" fill="none" stroke-width="3" opacity="0.85"/>`;
+  } else if (sh === 'pill') {
+    acc = `<g transform="rotate(-12 50 14)"><rect x="38" y="6" width="24" height="13" rx="6.5" fill="${c}" opacity="0.9"/><rect x="50" y="6" width="12" height="13" rx="6.5" fill="#0b0910" opacity="0.35"/></g>`;
+  } else if (sh === 'chart') {
+    acc = `<rect x="32" y="18" width="6" height="12" rx="2" fill="${c}" opacity="0.8"/>
+      <rect x="42" y="10" width="6" height="20" rx="2" fill="${c}" opacity="0.95"/>
+      <rect x="52" y="22" width="6" height="8" rx="2" fill="${c}" opacity="0.65"/>
+      <rect x="62" y="4" width="6" height="26" rx="2" fill="${c}" opacity="0.95"/>`;
   } else {
     acc = `<circle cx="50" cy="20" r="5" fill="${c}" opacity="0.85"/>`;
   }

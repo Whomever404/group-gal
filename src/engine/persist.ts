@@ -1,8 +1,8 @@
 import type {
-  CharKey, FlagKey, GameState, LogEntry, Session, SessionProgress, Speaker,
+  CharKey, FlagKey, GameState, LogEntry, Session, SessionProgress, Speaker, StatKey,
 } from './types';
 import { CHARS } from '../content/characters';
-import { SCHEMA_VERSION, createInitialProgress } from './effects';
+import { SCHEMA_VERSION, STAT_KEYS, createInitialProgress, createInitialState } from './effects';
 import { toCheckpoint } from './route-map';
 
 /**
@@ -13,9 +13,10 @@ import { toCheckpoint } from './route-map';
  * 游戏在任何情况下都不应因为一个坏存档而白屏。
  */
 
-/** 2 起新增 progress（路线图进度）。1 的存档经 migrateSave 补齐后仍可读。 */
-export const SAVE_VERSION = 2;
+/** 3 起新增 stats / target / turn / unlocked（回合循环与资质）。更早的存档经迁移补齐。 */
+export const SAVE_VERSION = 3;
 const V1 = 1;
+const V2 = 2;
 
 const CHAR_KEYS = Object.keys(CHARS) as CharKey[];
 const FLAG_KEYS: readonly string[] = ['sheiTrap', 'mokuJoin', 'actGood', 'actSkip'];
@@ -71,6 +72,15 @@ function parseState(raw: unknown): GameState | null {
     aff[k] = v;
   }
 
+  // 资质：z/r/m/q/w，值为有限非负数（v2 及更早的存档没有它，由 migrateState 补零）
+  if (!isObj(raw.stats)) return null;
+  const stats = {} as Record<StatKey, number>;
+  for (const k of STAT_KEYS) {
+    const v = raw.stats[k];
+    if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) return null;
+    stats[k] = v;
+  }
+
   // flags：只认已知标记，值必须是布尔
   if (!isObj(raw.flags)) return null;
   const flags: Partial<Record<FlagKey, boolean>> = {};
@@ -87,20 +97,36 @@ function parseState(raw: unknown): GameState | null {
     hub[k] = v;
   }
 
+  // 已回收结局：BE key / ge_<key>
+  if (!Array.isArray(raw.unlocked)) return null;
+  const unlocked: string[] = [];
+  for (const k of raw.unlocked) {
+    if (typeof k !== 'string' || FORBIDDEN_KEYS.has(k)) return null;
+    unlocked.push(k);
+  }
+
   if (!isNonNegInt(raw.water)) return null;
   if (!isNonNegInt(raw.members)) return null;
   if (!isNonNegInt(raw.repeatN)) return null;
+  if (!isNonNegInt(raw.turn)) return null;
   if (typeof raw.lastRepeat !== 'string') return null;
+
+  const target = raw.target;
+  if (target !== null && (typeof target !== 'string' || !CHAR_KEYS.includes(target as CharKey))) return null;
 
   return {
     schemaVersion: isNonNegInt(raw.schemaVersion) ? raw.schemaVersion : SCHEMA_VERSION,
     aff,
+    stats,
     flags,
     water: raw.water,
     members: raw.members,
     hub,
     lastRepeat: raw.lastRepeat,
     repeatN: raw.repeatN,
+    target: target as CharKey | null,
+    turn: raw.turn,
+    unlocked,
   };
 }
 
@@ -159,19 +185,36 @@ export function deserializeSession(raw: unknown, scriptLength: number): Session 
   return { state, ip: raw.ip, history, progress };
 }
 
+/** 老存档的状态补齐：缺哪个字段就按新局的初值补。 */
+function upgradeState(raw: unknown): unknown {
+  if (!isObj(raw)) return raw;
+  const init = createInitialState();
+  return {
+    ...raw,
+    stats: isObj(raw.stats) ? raw.stats : init.stats,
+    target: 'target' in raw ? raw.target : init.target,
+    turn: isNonNegInt(raw.turn) ? raw.turn : init.turn,
+    unlocked: Array.isArray(raw.unlocked) ? raw.unlocked : init.unlocked,
+  };
+}
+
 /**
  * 版本迁移入口。逐级把老存档升级到当前版本再交给 deserializeSession。
  *
- * - 无 `v` 的裸会话对象：按 v1 处理（补空 progress）
- * - v1：补空 progress 后升到 v2
+ * - 无 `v` 的裸会话对象 / v1：补空 progress 与默认资质、回合字段后升到当前版本
+ * - v2：补 stats / target / turn / unlocked 后升级
  * - 其它 / 来自未来的版本：一律拒绝（宁可读不出，也不要按旧规则误读新数据）
  */
 export function migrateSave(raw: unknown, scriptLength: number): Session | null {
   if (!isObj(raw)) return null;
 
-  if (!('v' in raw) || raw.v === V1) {
-    return deserializeSession(
-      { ...raw, v: SAVE_VERSION, progress: createInitialProgress() }, scriptLength);
+  if (!('v' in raw) || raw.v === V1 || raw.v === V2) {
+    return deserializeSession({
+      ...raw,
+      v: SAVE_VERSION,
+      state: upgradeState(raw.state),
+      progress: isObj(raw.progress) ? raw.progress : createInitialProgress(),
+    }, scriptLength);
   }
 
   if (raw.v !== SAVE_VERSION) return null;
